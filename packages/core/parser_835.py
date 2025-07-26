@@ -93,8 +93,10 @@ class Parser835(BaseParser):
                 
                 elif segment_id == "BPR" and current_transaction_835:
                     total_paid = self._safe_float(self._get_element(segment, 2))
-                    payment_method = self._get_element(segment, 3)
-                    payment_date = self._format_date_ccyymmdd(self._get_element(segment, 16))
+                    payment_method = self._get_element(segment, 4)  # BPR04 is payment method (ACH, CHK, etc.)
+                    # BPR11 contains the effective date (CCYYMMDD format)
+                    payment_date_raw = self._get_element(segment, 11)
+                    payment_date = self._format_date_ccyymmdd(payment_date_raw)
                     
                     current_transaction_835.financial_information = FinancialInformation(
                         total_paid=total_paid,

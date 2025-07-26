@@ -1,0 +1,142 @@
+# Realistic provider data for EDI testing
+providers:
+  - name: "MAYO CLINIC"
+    npi: "1831301043"
+    tax_id: "41-0680420"
+    specialty: "207R00000X"  # Internal Medicine
+    type: "facility"
+    address:
+      line1: "200 First Street SW"
+      city: "Rochester"
+      state: "MN"
+      zip: "55905"
+    contact:
+      phone: "507-284-2511"
+      fax: "507-284-0161"
+  
+  - name: "CLEVELAND CLINIC"
+    npi: "1679576207"
+    tax_id: "34-0715585"
+    specialty: "282N00000X"  # General Hospital
+    type: "facility"
+    address:
+      line1: "9500 Euclid Avenue"
+      city: "Cleveland"
+      state: "OH"
+      zip: "44195"
+    contact:
+      phone: "216-444-2200"
+      fax: "216-445-7176"
+  
+  - name: "JOHNS HOPKINS HOSPITAL"
+    npi: "1235159718"
+    tax_id: "52-0591177"
+    specialty: "282N00000X"  # General Hospital
+    type: "facility"
+    address:
+      line1: "1800 Orleans Street"
+      city: "Baltimore"
+      state: "MD"
+      zip: "21287"
+    contact:
+      phone: "410-955-5000"
+      fax: "410-614-2916"
+  
+  - name: "MASS GENERAL BRIGHAM"
+    npi: "1457314319"
+    tax_id: "04-2103534"
+    specialty: "282N00000X"  # General Hospital
+    type: "facility"
+    address:
+      line1: "55 Fruit Street"
+      city: "Boston"
+      state: "MA"
+      zip: "02114"
+    contact:
+      phone: "617-726-2000"
+      fax: "617-726-8320"
+  
+  - name: "CEDARS-SINAI MEDICAL CENTER"
+    npi: "1104803348"
+    tax_id: "95-1671917"
+    specialty: "282N00000X"  # General Hospital
+    type: "facility"
+    address:
+      line1: "8700 Beverly Boulevard"
+      city: "Los Angeles"
+      state: "CA"
+      zip: "90048"
+    contact:
+      phone: "310-423-3277"
+      fax: "310-423-0438"
+  
+  - name: "SMITH, JOHN MD"
+    npi: "1234567890"
+    tax_id: "12-3456789"
+    specialty: "207R00000X"  # Internal Medicine
+    type: "individual"
+    address:
+      line1: "123 Medical Plaza Drive"
+      line2: "Suite 200"
+      city: "Anywhere"
+      state: "CA"
+      zip: "90210"
+    contact:
+      phone: "555-123-4567"
+      fax: "555-123-4568"
+  
+  - name: "JOHNSON, MARY DO"
+    npi: "2345678901"
+    tax_id: "23-4567890"
+    specialty: "207Q00000X"  # Family Medicine
+    type: "individual"
+    address:
+      line1: "456 Health Center Blvd"
+      city: "Springfield"
+      state: "IL"
+      zip: "62701"
+    contact:
+      phone: "555-234-5678"
+      fax: "555-234-5679"
+  
+  - name: "WILSON, ROBERT MD"
+    npi: "3456789012"
+    tax_id: "34-5678901"
+    specialty: "207RC0000X"  # Cardiovascular Disease
+    type: "individual"
+    address:
+      line1: "789 Cardiac Care Lane"
+      city: "Houston"
+      state: "TX"
+      zip: "77001"
+    contact:
+      phone: "555-345-6789"
+      fax: "555-345-6790"
+  
+  - name: "BROWN, SARAH MD"
+    npi: "4567890123"
+    tax_id: "45-6789012"
+    specialty: "207RG0000X"  # Gastroenterology
+    type: "individual"
+    address:
+      line1: "321 Digestive Health Ave"
+      city: "Phoenix"
+      state: "AZ"
+      zip: "85001"
+    contact:
+      phone: "555-456-7890"
+      fax: "555-456-7891"
+  
+  - name: "COMMUNITY HEALTH CLINIC"
+    npi: "5678901234"
+    tax_id: "56-7890123"
+    specialty: "261QF0400X"  # Federally Qualified Health Center
+    type: "facility"
+    address:
+      line1: "100 Community Way"
+      city: "Denver"
+      state: "CO"
+      zip: "80201"
+    contact:
+      phone: "555-567-8901"
+      fax: "555-567-8902"

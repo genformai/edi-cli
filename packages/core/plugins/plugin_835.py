@@ -117,7 +117,7 @@ class Plugin835(TransactionParserPlugin):
                 # Financial Information
                 total_paid = float(segment[2]) if len(segment) > 2 and segment[2] else 0
                 payment_method = segment[4] if len(segment) > 4 else ""
-                payment_date = _format_ccyymmdd(segment[5]) if len(segment) > 5 and segment[5] else ""
+                payment_date = _format_ccyymmdd(segment[11]) if len(segment) > 11 and segment[11] else ""
                 
                 current_transaction_835.financial_information = FinancialInformation(
                     total_paid=total_paid,

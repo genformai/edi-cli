@@ -1,0 +1,176 @@
+# Common ICD-10 diagnosis codes for EDI testing
+diagnosis_codes:
+  # Cardiovascular
+  - code: "I10"
+    description: "Essential hypertension"
+    category: "cardiovascular"
+    severity: "chronic"
+  
+  - code: "I25.10"
+    description: "Atherosclerotic heart disease of native coronary artery without angina pectoris"
+    category: "cardiovascular"
+    severity: "chronic"
+  
+  - code: "I48.91"
+    description: "Unspecified atrial fibrillation"
+    category: "cardiovascular"
+    severity: "chronic"
+  
+  - code: "I50.9"
+    description: "Heart failure, unspecified"
+    category: "cardiovascular"
+    severity: "chronic"
+  
+  # Endocrine/Metabolic
+  - code: "E11.9"
+    description: "Type 2 diabetes mellitus without complications"
+    category: "endocrine"
+    severity: "chronic"
+  
+  - code: "E11.40"
+    description: "Type 2 diabetes mellitus with diabetic neuropathy, unspecified"
+    category: "endocrine"
+    severity: "chronic"
+  
+  - code: "E78.5"
+    description: "Hyperlipidemia, unspecified"
+    category: "endocrine"
+    severity: "chronic"
+  
+  - code: "E03.9"
+    description: "Hypothyroidism, unspecified"
+    category: "endocrine"
+    severity: "chronic"
+  
+  # Respiratory
+  - code: "J44.1"
+    description: "Chronic obstructive pulmonary disease with acute exacerbation"
+    category: "respiratory"
+    severity: "acute"
+  
+  - code: "J45.9"
+    description: "Asthma, unspecified"
+    category: "respiratory"
+    severity: "chronic"
+  
+  - code: "J06.9"
+    description: "Acute upper respiratory infection, unspecified"
+    category: "respiratory"
+    severity: "acute"
+  
+  - code: "R06.02"
+    description: "Shortness of breath"
+    category: "respiratory"
+    severity: "symptom"
+  
+  - code: "R05"
+    description: "Cough"
+    category: "respiratory"
+    severity: "symptom"
+  
+  # Gastrointestinal
+  - code: "K21.9"
+    description: "Gastro-esophageal reflux disease without esophagitis"
+    category: "gastrointestinal"
+    severity: "chronic"
+  
+  - code: "K59.00"
+    description: "Constipation, unspecified"
+    category: "gastrointestinal"
+    severity: "acute"
+  
+  - code: "R10.9"
+    description: "Unspecified abdominal pain"
+    category: "gastrointestinal"
+    severity: "symptom"
+  
+  # Musculoskeletal
+  - code: "M25.562"
+    description: "Pain in left knee"
+    category: "musculoskeletal"
+    severity: "symptom"
+  
+  - code: "M79.3"
+    description: "Panniculitis, unspecified"
+    category: "musculoskeletal"
+    severity: "acute"
+  
+  - code: "M54.5"
+    description: "Low back pain"
+    category: "musculoskeletal"
+    severity: "symptom"
+  
+  - code: "M25.50"
+    description: "Pain in unspecified joint"
+    category: "musculoskeletal"
+    severity: "symptom"
+  
+  # Neurological
+  - code: "G43.909"
+    description: "Migraine, unspecified, not intractable, without status migrainosus"
+    category: "neurological"
+    severity: "chronic"
+  
+  - code: "R51"
+    description: "Headache"
+    category: "neurological"
+    severity: "symptom"
+  
+  - code: "G47.00"
+    description: "Insomnia, unspecified"
+    category: "neurological"
+    severity: "chronic"
+  
+  # Mental Health
+  - code: "F32.9"
+    description: "Major depressive disorder, single episode, unspecified"
+    category: "mental_health"
+    severity: "chronic"
+  
+  - code: "F41.9"
+    description: "Anxiety disorder, unspecified"
+    category: "mental_health"
+    severity: "chronic"
+  
+  # Genitourinary
+  - code: "N39.0"
+    description: "Urinary tract infection, site not specified"
+    category: "genitourinary"
+    severity: "acute"
+  
+  - code: "N18.6"
+    description: "Chronic kidney disease, stage 5"
+    category: "genitourinary"
+    severity: "chronic"
+  
+  # General/Symptoms
+  - code: "R50.9"
+    description: "Fever, unspecified"
+    category: "general"
+    severity: "symptom"
+  
+  - code: "R53.83"
+    description: "Fatigue"
+    category: "general"
+    severity: "symptom"
+  
+  - code: "R06.00"
+    description: "Dyspnea, unspecified"
+    category: "general"
+    severity: "symptom"
+  
+  # Preventive Care
+  - code: "Z00.00"
+    description: "Encounter for general adult medical examination without abnormal findings"
+    category: "preventive"
+    severity: "routine"
+  
+  - code: "Z12.11"
+    description: "Encounter for screening for malignant neoplasm of colon"
+    category: "preventive"
+    severity: "routine"
+  
+  - code: "Z51.11"
+    description: "Encounter for antineoplastic chemotherapy"
+    category: "preventive"
+    severity: "treatment"

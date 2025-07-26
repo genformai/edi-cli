@@ -1,0 +1,198 @@
+# Common CPT procedure codes for EDI testing
+procedure_codes:
+  # Office Visits - Evaluation & Management
+  - code: "99201"
+    description: "Office visit, new patient, problem focused"
+    category: "office_visit"
+    typical_charge: 150.00
+    rvu: 1.3
+  
+  - code: "99202"
+    description: "Office visit, new patient, expanded problem focused"
+    category: "office_visit"
+    typical_charge: 180.00
+    rvu: 2.0
+  
+  - code: "99203"
+    description: "Office visit, new patient, detailed"
+    category: "office_visit"
+    typical_charge: 220.00
+    rvu: 2.8
+  
+  - code: "99204"
+    description: "Office visit, new patient, comprehensive"
+    category: "office_visit"
+    typical_charge: 280.00
+    rvu: 4.3
+  
+  - code: "99205"
+    description: "Office visit, new patient, comprehensive high complexity"
+    category: "office_visit"
+    typical_charge: 350.00
+    rvu: 5.4
+  
+  - code: "99211"
+    description: "Office visit, established patient, minimal"
+    category: "office_visit"
+    typical_charge: 75.00
+    rvu: 0.2
+  
+  - code: "99212"
+    description: "Office visit, established patient, problem focused"
+    category: "office_visit"
+    typical_charge: 110.00
+    rvu: 0.9
+  
+  - code: "99213"
+    description: "Office visit, established patient, expanded problem focused"
+    category: "office_visit"
+    typical_charge: 150.00
+    rvu: 1.3
+  
+  - code: "99214"
+    description: "Office visit, established patient, detailed"
+    category: "office_visit"
+    typical_charge: 200.00
+    rvu: 2.0
+  
+  - code: "99215"
+    description: "Office visit, established patient, comprehensive"
+    category: "office_visit"
+    typical_charge: 250.00
+    rvu: 2.8
+  
+  # Laboratory Services
+  - code: "80053"
+    description: "Comprehensive metabolic panel"
+    category: "laboratory"
+    typical_charge: 125.00
+    rvu: 1.2
+  
+  - code: "80061"
+    description: "Lipid panel"
+    category: "laboratory"
+    typical_charge: 85.00
+    rvu: 0.8
+  
+  - code: "85025"
+    description: "Complete blood count with differential"
+    category: "laboratory"
+    typical_charge: 75.00
+    rvu: 0.7
+  
+  - code: "85027"
+    description: "Complete blood count, automated"
+    category: "laboratory"
+    typical_charge: 50.00
+    rvu: 0.5
+  
+  - code: "84443"
+    description: "Thyroid stimulating hormone (TSH)"
+    category: "laboratory"
+    typical_charge: 95.00
+    rvu: 0.9
+  
+  - code: "83036"
+    description: "Hemoglobin A1C"
+    category: "laboratory"
+    typical_charge: 65.00
+    rvu: 0.6
+  
+  # Radiology Services
+  - code: "71020"
+    description: "Chest X-ray, 2 views"
+    category: "radiology"
+    typical_charge: 250.00
+    rvu: 2.2
+  
+  - code: "71045"
+    description: "Chest X-ray, single view"
+    category: "radiology"
+    typical_charge: 200.00
+    rvu: 1.8
+  
+  - code: "73060"
+    description: "Knee X-ray, 2 or 3 views"
+    category: "radiology"
+    typical_charge: 225.00
+    rvu: 2.0
+  
+  - code: "73100"
+    description: "Wrist X-ray, 2 views"
+    category: "radiology"
+    typical_charge: 200.00
+    rvu: 1.8
+  
+  - code: "74177"
+    description: "CT abdomen and pelvis with contrast"
+    category: "radiology"
+    typical_charge: 1800.00
+    rvu: 8.5
+  
+  - code: "70553"
+    description: "MRI brain with and without contrast"
+    category: "radiology"
+    typical_charge: 2200.00
+    rvu: 10.2
+  
+  # Procedures
+  - code: "36415"
+    description: "Venipuncture, routine blood draw"
+    category: "procedure"
+    typical_charge: 25.00
+    rvu: 0.2
+  
+  - code: "12001"
+    description: "Simple repair, superficial wound, 2.5 cm or less"
+    category: "procedure"
+    typical_charge: 180.00
+    rvu: 1.6
+  
+  - code: "11055"
+    description: "Paring or cutting of skin lesion, single"
+    category: "procedure"
+    typical_charge: 95.00
+    rvu: 0.8
+  
+  - code: "93000"
+    description: "Electrocardiogram, routine with interpretation"
+    category: "procedure"
+    typical_charge: 150.00
+    rvu: 1.3
+  
+  - code: "93307"
+    description: "Echocardiography, real time"
+    category: "procedure"
+    typical_charge: 650.00
+    rvu: 6.2
+  
+  # Specialty Services
+  - code: "99243"
+    description: "Office consultation, detailed"
+    category: "consultation"
+    typical_charge: 300.00
+    rvu: 2.8
+  
+  - code: "99244"
+    description: "Office consultation, comprehensive"
+    category: "consultation"
+    typical_charge: 400.00
+    rvu: 4.3
+  
+  - code: "99283"
+    description: "Emergency department visit, moderate complexity"
+    category: "emergency"
+    typical_charge: 450.00
+    rvu: 4.2
+  
+  - code: "99284"
+    description: "Emergency department visit, high complexity"
+    category: "emergency"
+    typical_charge: 650.00
+    rvu: 6.0
+  
+  - code: "99285"
+    description: "Emergency department visit, high complexity"
+    category: "emergency"
+    typical_charge: 850.00
+    rvu: 8.0

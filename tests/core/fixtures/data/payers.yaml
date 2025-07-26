@@ -1,0 +1,121 @@
+# Realistic payer data for EDI testing
+payers:
+  - name: "AETNA BETTER HEALTH"
+    id: "60054"
+    type: "insurance"
+    contact:
+      phone: "1-800-872-3862"
+      website: "www.aetnabetterhealth.com"
+    address:
+      line1: "151 Farmington Avenue"
+      city: "Hartford"
+      state: "CT"
+      zip: "06156"
+  
+  - name: "ANTHEM BLUE CROSS"
+    id: "60055"
+    type: "insurance"
+    contact:
+      phone: "1-800-331-1476"
+      website: "www.anthem.com"
+    address:
+      line1: "220 Virginia Avenue"
+      city: "Indianapolis"
+      state: "IN"
+      zip: "46204"
+  
+  - name: "BLUE CROSS BLUE SHIELD"
+    id: "60001"
+    type: "insurance"
+    contact:
+      phone: "1-800-810-2583"
+      website: "www.bcbs.com"
+    address:
+      line1: "225 N Michigan Ave"
+      city: "Chicago"
+      state: "IL"
+      zip: "60601"
+  
+  - name: "CIGNA HEALTHCARE"
+    id: "60052"
+    type: "insurance"
+    contact:
+      phone: "1-800-244-6224"
+      website: "www.cigna.com"
+    address:
+      line1: "900 Cottage Grove Road"
+      city: "Bloomfield"
+      state: "CT"
+      zip: "06002"
+  
+  - name: "HUMANA INC"
+    id: "60056"
+    type: "insurance"
+    contact:
+      phone: "1-800-457-4708"
+      website: "www.humana.com"
+    address:
+      line1: "500 West Main Street"
+      city: "Louisville"
+      state: "KY"
+      zip: "40202"
+  
+  - name: "KAISER FOUNDATION HOSPITALS"
+    id: "60057"
+    type: "hmo"
+    contact:
+      phone: "1-800-464-4000"
+      website: "www.kp.org"
+    address:
+      line1: "1 Kaiser Plaza"
+      city: "Oakland"
+      state: "CA"
+      zip: "94612"
+  
+  - name: "MEDICARE PART B"
+    id: "80840"
+    type: "government"
+    contact:
+      phone: "1-800-633-4227"
+      website: "www.medicare.gov"
+    address:
+      line1: "7500 Security Boulevard"
+      city: "Baltimore"
+      state: "MD"
+      zip: "21244"
+  
+  - name: "MEDICAID"
+    id: "87726"
+    type: "government"
+    contact:
+      phone: "1-800-318-2596"
+      website: "www.medicaid.gov"
+    address:
+      line1: "7500 Security Boulevard"
+      city: "Baltimore"
+      state: "MD"
+      zip: "21244"
+  
+  - name: "UNITEDHEALTH GROUP"
+    id: "60053"
+    type: "insurance"
+    contact:
+      phone: "1-800-328-5979"
+      website: "www.uhc.com"
+    address:
+      line1: "9900 Bren Road East"
+      city: "Minnetonka"
+      state: "MN"
+      zip: "55343"
+  
+  - name: "WELLCARE HEALTH PLANS"
+    id: "60058"
+    type: "insurance"
+    contact:
+      phone: "1-866-775-9200"
+      website: "www.wellcare.com"
+    address:
+      line1: "8735 Henderson Road"
+      city: "Tampa"
+      state: "FL"
+      zip: "33634"
