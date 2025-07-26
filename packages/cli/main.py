@@ -76,8 +76,11 @@ def validate(
     input_file: Annotated[str, typer.Argument(help="The path to the input EDI file.")],
     schema: Annotated[str, typer.Option(help="The name of the schema to use for validation.")] = "x12-835-5010",
     rules: Annotated[str, typer.Option(help="The path to a YAML file containing validation rules.")] = None,
+    rule_set: Annotated[str, typer.Option(help="Predefined rule set to use (basic, hipaa, business).")] = None,
+    verbose: Annotated[bool, typer.Option("--verbose", "-v", help="Show detailed validation results.")] = False,
+    format_output: Annotated[str, typer.Option("--format", help="Output format (text, json).")] = "text",
 ):
-    """Validate an EDI file against a schema and optional rules."""
+    """Validate an EDI file against a schema and business rules."""
     try:
         if not os.path.exists(input_file):
             typer.echo(f"Input file not found: {input_file}")
@@ -88,7 +91,7 @@ def validate(
         with open(input_file, 'r') as f:
             edi_content = f.read()
             
-        # Basic parsing validation
+        # Parse the EDI file
         parser = EdiParser(edi_string=edi_content, schema_path=schema_path)
         edi_root = parser.parse()
         
@@ -97,21 +100,125 @@ def validate(
             typer.echo("❌ Validation failed: No valid interchanges found")
             raise typer.Exit(1)
         
-        typer.echo("✅ Basic parsing validation passed")
+        # Initialize validation engine
+        from core.validation import ValidationEngine
+        from core.validators_835 import get_835_business_rules
         
-        # Count parsed elements
-        total_interchanges = len(edi_root.interchanges)
-        total_groups = sum(len(i.functional_groups) for i in edi_root.interchanges)
-        total_transactions = sum(len(g.transactions) for i in edi_root.interchanges for g in i.functional_groups)
-        total_claims = sum(len(t.claims) for i in edi_root.interchanges for g in i.functional_groups for t in g.transactions)
+        engine = ValidationEngine()
         
-        typer.echo(f"  • Interchanges: {total_interchanges}")
-        typer.echo(f"  • Functional Groups: {total_groups}")
-        typer.echo(f"  • Transactions: {total_transactions}")
-        typer.echo(f"  • Claims: {total_claims}")
+        # Load built-in business rules for 835
+        if schema in ["x12-835-5010", "835"]:
+            for rule in get_835_business_rules():
+                engine.add_rule(rule)
         
+        # Load predefined rule sets
+        if rule_set:
+            rules_dir = Path(__file__).parent.parent / "validation-rules"
+            if rule_set == "basic":
+                rules_file = rules_dir / "835-basic.yml"
+            elif rule_set == "hipaa":
+                rules_file = rules_dir / "hipaa-basic.yml"
+            elif rule_set == "business":
+                # Load both basic and business rules
+                basic_rules = rules_dir / "835-basic.yml"
+                hipaa_rules = rules_dir / "hipaa-basic.yml"
+                if basic_rules.exists():
+                    engine.load_rules_from_yaml(str(basic_rules))
+                if hipaa_rules.exists():
+                    engine.load_rules_from_yaml(str(hipaa_rules))
+            else:
+                typer.echo(f"Unknown rule set: {rule_set}")
+                raise typer.Exit(1)
+            
+            if rule_set in ["basic", "hipaa"] and Path(rules_file).exists():
+                loaded_count = engine.load_rules_from_yaml(str(rules_file))
+                if verbose:
+                    typer.echo(f"Loaded {loaded_count} rules from {rule_set} rule set")
+        
+        # Load custom rules file if provided
         if rules:
-            typer.echo(f"⚠️  Custom validation rules not yet implemented: {rules}")
+            if not os.path.exists(rules):
+                typer.echo(f"Rules file not found: {rules}")
+                raise typer.Exit(1)
+            
+            loaded_count = engine.load_rules_from_yaml(rules)
+            if verbose:
+                typer.echo(f"Loaded {loaded_count} custom rules from {rules}")
+        
+        # Run validation
+        validation_result = engine.validate(edi_root)
+        
+        # Output results
+        if format_output == "json":
+            import json
+            result_data = {
+                "is_valid": validation_result.is_valid,
+                "summary": validation_result.summary(),
+                "errors": [
+                    {
+                        "code": error.code,
+                        "message": error.message,
+                        "severity": error.severity.value,
+                        "category": error.category.value,
+                        "field_path": error.field_path,
+                        "value": str(error.value) if error.value is not None else None,
+                        "rule_id": error.rule_id
+                    }
+                    for error in validation_result.get_all_issues()
+                ]
+            }
+            typer.echo(json.dumps(result_data, indent=2))
+        else:
+            # Text format output
+            if validation_result.is_valid:
+                typer.echo("✅ Validation passed")
+            else:
+                typer.echo("❌ Validation failed")
+            
+            # Show summary
+            summary = validation_result.summary()
+            typer.echo(f"\n📊 Validation Summary:")
+            typer.echo(f"  • Rules applied: {summary['rules_applied']}")
+            typer.echo(f"  • Errors: {summary['errors']}")
+            typer.echo(f"  • Warnings: {summary['warnings']}")
+            typer.echo(f"  • Info: {summary['info']}")
+            
+            # Show document statistics
+            total_interchanges = len(edi_root.interchanges)
+            total_groups = sum(len(i.functional_groups) for i in edi_root.interchanges)
+            total_transactions = sum(len(g.transactions) for i in edi_root.interchanges for g in i.functional_groups)
+            total_claims = sum(len(t.claims) for i in edi_root.interchanges for g in i.functional_groups for t in g.transactions)
+            
+            typer.echo(f"\n📋 Document Structure:")
+            typer.echo(f"  • Interchanges: {total_interchanges}")
+            typer.echo(f"  • Functional Groups: {total_groups}")
+            typer.echo(f"  • Transactions: {total_transactions}")
+            typer.echo(f"  • Claims: {total_claims}")
+            
+            # Show errors and warnings
+            if validation_result.errors and (verbose or len(validation_result.errors) <= 10):
+                typer.echo(f"\n🚨 Errors ({len(validation_result.errors)}):")
+                for error in validation_result.errors:
+                    typer.echo(f"  • [{error.code}] {error.message}")
+                    if verbose and error.field_path:
+                        typer.echo(f"    Field: {error.field_path}")
+                    if verbose and error.value:
+                        typer.echo(f"    Value: {error.value}")
+            elif validation_result.errors:
+                typer.echo(f"\n🚨 {len(validation_result.errors)} errors found (use --verbose to see details)")
+            
+            if validation_result.warnings and (verbose or len(validation_result.warnings) <= 5):
+                typer.echo(f"\n⚠️  Warnings ({len(validation_result.warnings)}):")
+                for warning in validation_result.warnings:
+                    typer.echo(f"  • [{warning.code}] {warning.message}")
+                    if verbose and warning.field_path:
+                        typer.echo(f"    Field: {warning.field_path}")
+            elif validation_result.warnings:
+                typer.echo(f"\n⚠️  {len(validation_result.warnings)} warnings found (use --verbose to see details)")
+        
+        # Exit with error code if validation failed
+        if not validation_result.is_valid:
+            raise typer.Exit(1)
             
     except Exception as e:
         typer.echo(f"❌ Validation failed: {e}")

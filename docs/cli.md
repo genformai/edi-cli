@@ -34,34 +34,81 @@ edi convert sample.edi --to csv --out claims.csv
 
 ## `validate`
 
-Validates an EDI file against a schema and performs basic parsing validation.
+Validates an EDI file against a schema and comprehensive business rules with HIPAA compliance checking.
 
 ### Usage
 
 ```bash
-edi validate <input_file> [--schema <schema_name>] [--rules <rules_file>]
+edi validate <input_file> [--schema <schema_name>] [--rules <rules_file>] [--rule-set <set_name>] [--verbose] [--format <format>]
 ```
 
 ### Arguments
 
 *   `<input_file>`: The path to the input EDI file.
 *   `--schema <schema_name>`: (Optional) The name of the schema to use for validation. Default: `x12-835-5010`.
-*   `--rules <rules_file>`: (Optional) The path to a YAML file containing validation rules. *(Note: Custom rules not yet implemented in v0.1)*
+*   `--rules <rules_file>`: (Optional) The path to a YAML file containing custom validation rules.
+*   `--rule-set <set_name>`: (Optional) Predefined rule set to use (`basic`, `hipaa`, `business`).
+*   `--verbose`, `-v`: (Optional) Show detailed validation results including field paths and values.
+*   `--format <format>`: (Optional) Output format (`text`, `json`). Default: `text`.
 
 ### Examples
 
 ```bash
-# Basic validation
+# Basic validation with parsing only
 edi validate sample.edi
 
-# Validate with specific schema
-edi validate sample.edi --schema x12-835-5010
+# Validate with basic business rules
+edi validate sample.edi --rule-set basic
+
+# Validate with HIPAA compliance rules
+edi validate sample.edi --rule-set hipaa
+
+# Validate with comprehensive business rules
+edi validate sample.edi --rule-set business
+
+# Validate with custom rules file
+edi validate sample.edi --rules custom-rules.yml
+
+# Get detailed validation results
+edi validate sample.edi --rule-set basic --verbose
+
+# Get JSON output for programmatic use
+edi validate sample.edi --rule-set basic --format json
 ```
 
-The validate command currently performs:
-- Basic parsing validation
-- Structure verification
-- Element counting (interchanges, functional groups, transactions, claims)
+### Validation Features (v0.2)
+
+**Built-in Rule Sets:**
+- **`basic`**: Structural validation, required fields, format checking
+- **`hipaa`**: HIPAA compliance validation including NPI verification, date formats, amount precision
+- **`business`**: Comprehensive business logic validation including financial consistency, claim validation
+
+**Business Rules Validation:**
+- Financial consistency across transactions
+- Claim amount validation and logic checks
+- Service line validation and consistency
+- Date validation and logical constraints
+- Payer/payee information validation with NPI Luhn algorithm
+
+**HIPAA Compliance:**
+- NPI validation with Luhn algorithm check
+- Proper date format validation (CCYYMMDD → YYYY-MM-DD)
+- Monetary amount precision requirements (max 2 decimal places)
+- Entity identifier requirements
+- Control number format validation
+
+**Field-level Validation:**
+- Required field checking
+- Data type validation (numeric, date, text)
+- Format validation with regex patterns
+- Length constraints
+- Custom validation functions
+
+**Error Reporting:**
+- Detailed error messages with field paths
+- Severity levels (error, warning, info)
+- Categorized validation results (structural, business, HIPAA, format)
+- Summary statistics and document structure analysis
 
 ## `inspect`
 

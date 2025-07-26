@@ -28,13 +28,19 @@ We believe that core EDI parsing and validation should be a commodity. By open-s
     edi convert examples/datasets/sample-835.edi --to csv --out claims.csv
     ```
 
-4.  **Validate an EDI file:**
+4.  **Validate with business rules:**
 
     ```bash
-    edi validate examples/datasets/sample-835.edi --schema x12-835-5010
+    edi validate examples/datasets/sample-835.edi --rule-set business
     ```
 
-5.  **Inspect file structure:**
+5.  **HIPAA compliance validation:**
+
+    ```bash
+    edi validate examples/datasets/sample-835.edi --rule-set hipaa --verbose
+    ```
+
+6.  **Inspect file structure:**
 
     ```bash
     edi inspect examples/datasets/sample-835.edi
@@ -49,11 +55,8 @@ Our vision is to build the most comprehensive, developer-friendly EDI toolkit fo
 #### **v0.1:** ✅ **Foundation** 
 *835 parse → JSON/CSV, CLI, tests, docs*
 
-#### **v0.2:** **Validation Engine** *(Q2 2024)*
-- 835 validation DSL with business rules
-- HIPAA compliance validation
-- Custom rule engine with YAML configuration
-- Field-level validation with detailed error reporting
+#### **v0.2:** ✅ **Validation Engine** 
+*835 validation DSL with business rules, HIPAA compliance validation, custom rule engine with YAML configuration, field-level validation with detailed error reporting*
 
 #### **v0.3:** **Healthcare Core** *(Q3 2024)*
 - **837P** (Professional Claims) full support
