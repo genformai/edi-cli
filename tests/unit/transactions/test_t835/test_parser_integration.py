@@ -8,7 +8,7 @@ migrated from the original test suite and enhanced with modern patterns.
 import pytest
 import time
 from decimal import Decimal
-from packages.core.parser_835 import Parser835
+from packages.core.transactions.t835.parser import Parser835
 from tests.fixtures import EDIFixtures
 from tests.shared.assertions import assert_transaction_structure, assert_financial_integrity
 from tests.shared.test_patterns import StandardTestMixin, PerformanceTestMixin

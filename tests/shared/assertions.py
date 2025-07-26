@@ -234,3 +234,55 @@ def build_835_edi(base_headers: str, segments: Union[List[str], str], base_trail
     trailer = base_trailer.replace("{{segment_count}}", str(segment_count))
     
     return base_headers + segments + trailer
+
+
+def assert_segment_structure(segments: List[Any], expected_count: Optional[int] = None) -> None:
+    """
+    Assert basic EDI segment structure is valid.
+    
+    Args:
+        segments: List of EDI segments to validate
+        expected_count: Expected number of segments (optional)
+        
+    Raises:
+        AssertionError: If segment structure is invalid
+    """
+    assert isinstance(segments, list), "Segments must be a list"
+    assert len(segments) > 0, "Segments list cannot be empty"
+    
+    if expected_count is not None:
+        assert len(segments) == expected_count, (
+            f"Expected {expected_count} segments, got {len(segments)}"
+        )
+    
+    # Check that each segment has at least one element (segment ID)
+    for i, segment in enumerate(segments):
+        assert isinstance(segment, list), f"Segment {i} must be a list"
+        assert len(segment) > 0, f"Segment {i} cannot be empty"
+        assert isinstance(segment[0], str), f"Segment {i} ID must be a string"
+
+
+def assert_npi_valid(npi: str) -> None:
+    """
+    Assert that an NPI is valid using Luhn algorithm.
+    
+    Args:
+        npi: NPI to validate
+        
+    Raises:
+        AssertionError: If NPI is invalid
+    """
+    assert npi and len(npi) == 10, f"NPI must be 10 digits, got '{npi}'"
+    assert npi.isdigit(), f"NPI must contain only digits, got '{npi}'"
+    
+    # Luhn algorithm validation
+    total = 0
+    for i, digit in enumerate(npi):
+        n = int(digit)
+        if i % 2 == 0:
+            n *= 2
+            if n > 9:
+                n = n // 10 + n % 10
+        total += n
+    
+    assert total % 10 == 0, f"NPI '{npi}' failed Luhn algorithm validation"

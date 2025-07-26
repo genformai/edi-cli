@@ -8,7 +8,7 @@ for critical EDI parsing operations.
 import pytest
 import time
 from decimal import Decimal
-from packages.core.parser_835 import Parser835
+from packages.core.transactions.t835.parser import Parser835
 from tests.fixtures import EDIFixtures, IntegrationScenarios
 
 

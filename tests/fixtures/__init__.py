@@ -12,7 +12,7 @@ from ..core.fixtures.legacy_fixtures import EDIFixtures
 from ..core.fixtures.builders.builder_835 import EDI835Builder
 from ..core.fixtures.builders.builder_270 import EDI270Builder
 from ..core.fixtures.builders.builder_276 import EDI276Builder
-from ..core.fixtures.builders.builder_837p import EDI837PBuilder
+from ..core.fixtures.builders.builder_837p import EDI837pBuilder
 
 # Import scenario-based fixtures
 from ..core.fixtures.scenarios.payment_scenarios import PaymentScenarios
@@ -31,7 +31,7 @@ __all__ = [
     'EDI835Builder',
     'EDI270Builder', 
     'EDI276Builder',
-    'EDI837PBuilder',
+    'EDI837pBuilder',
     
     # Scenario-based fixtures
     'PaymentScenarios',

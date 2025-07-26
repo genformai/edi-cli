@@ -9,7 +9,7 @@ from the original test suite.
 
 import pytest
 from decimal import Decimal
-from packages.core.parser_835 import Parser835
+from packages.core.transactions.t835.parser import Parser835
 from tests.fixtures import EDIFixtures
 from tests.shared.assertions import assert_balances, assert_transaction_structure
 from tests.shared.test_patterns import StandardTestMixin

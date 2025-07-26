@@ -105,7 +105,7 @@ class Payment835TestPattern(BaseTransactionTestPattern):
     
     @property
     def parser_class(self) -> Type:
-        from packages.core.parser_835 import Parser835
+        from packages.core.transactions.t835.parser import Parser835
         return Parser835
     
     def get_minimal_valid_content(self) -> str:
@@ -396,7 +396,7 @@ class TestMixinUsage(StandardTestMixin, ValidationTestMixin, PerformanceTestMixi
     
     def test_parser_performance_with_patterns(self):
         """Test parser performance using performance patterns."""
-        from packages.core.parser_835 import Parser835
+        from packages.core.transactions.t835.parser import Parser835
         from tests.fixtures import EDIFixtures
         
         parser = Parser835()
@@ -405,13 +405,13 @@ class TestMixinUsage(StandardTestMixin, ValidationTestMixin, PerformanceTestMixi
         # Test performance threshold
         self.assert_performance_threshold(
             parser.parse, 
-            threshold_seconds=0.1, 
+            0.1,  # threshold_seconds
             edi_content
         )
     
     def test_error_handling_with_patterns(self):
         """Test error handling using error handling patterns."""
-        from packages.core.parser_835 import Parser835
+        from packages.core.transactions.t835.parser import Parser835
         
         parser = Parser835()
         invalid_inputs = ["", "invalid", None, "ST*999*0001~SE*1*0001~"]
