@@ -1,0 +1,90 @@
+{
+    "interchanges": [
+        {
+            "header": {
+                "sender_id": "SENDERID",
+                "receiver_id": "RECEIVERID",
+                "date": "2023-01-01",
+                "time": "00:00",
+                "control_number": "000000001"
+            },
+            "functional_groups": [
+                {
+                    "header": {
+                        "functional_group_code": "HP",
+                        "sender_id": "SENDERID",
+                        "receiver_id": "RECEIVERID",
+                        "date": "2023-01-01",
+                        "time": "00:00",
+                        "control_number": "1"
+                    },
+                    "transactions": [
+                        {
+                            "header": {
+                                "transaction_set_code": "835",
+                                "control_number": "0001"
+                            },
+                            "financial_information": {
+                                "total_paid": 1000,
+                                "payment_method": "CHK",
+                                "payment_date": "2023-01-01"
+                            },
+                            "reference_numbers": [
+                                {
+                                    "type": "trace_number",
+                                    "value": "1234567890"
+                                }
+                            ],
+                            "dates": [
+                                {
+                                    "type": "production_date",
+                                    "date": "2023-01-01"
+                                }
+                            ],
+                            "payer": {
+                                "name": "PAYER NAME"
+                            },
+                            "payee": {
+                                "name": "PAYEE NAME",
+                                "npi": "1234567890"
+                            },
+                            "claims": [
+                                {
+                                    "claim_id": "12345",
+                                    "status_code": 1,
+                                    "total_charge": 100,
+                                    "total_paid": 100,
+                                    "patient_responsibility": 0,
+                                    "payer_control_number": "9876543210",
+                                    "adjustments": [
+                                        {
+                                            "group_code": "CO",
+                                            "reason_code": "45",
+                                            "amount": 10.5,
+                                            "quantity": 1
+                                        },
+                                        {
+                                            "group_code": "PR",
+                                            "reason_code": "1",
+                                            "amount": 5,
+                                            "quantity": 1
+                                        }
+                                    ],
+                                    "services": [
+                                        {
+                                            "service_code": "HC:A0000",
+                                            "charge_amount": 100,
+                                            "paid_amount": 100,
+                                            "revenue_code": "1",
+                                            "service_date": "2023-01-01"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
