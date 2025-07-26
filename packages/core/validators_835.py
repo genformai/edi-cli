@@ -8,6 +8,7 @@ EDI 835 Electronic Remittance Advice transactions.
 from typing import Dict, List, Any, Optional
 from .validation import ValidationRule, ValidationError, ValidationSeverity, ValidationCategory, BusinessRule
 from .ast import EdiRoot
+from .utils import validate_npi
 import logging
 
 logger = logging.getLogger(__name__)
@@ -278,11 +279,7 @@ class PayerPayee835ValidationRule(BusinessRule):
                             
                             # Validate NPI if present
                             if transaction.payee.npi:
-                                if len(transaction.payee.npi) != 10 or not transaction.payee.npi.isdigit():
-                                    return False
-                                
-                                # Luhn algorithm validation for NPI
-                                if not self._validate_npi_luhn(transaction.payee.npi):
+                                if not validate_npi(transaction.payee.npi):
                                     return False
             
             return True
@@ -290,22 +287,6 @@ class PayerPayee835ValidationRule(BusinessRule):
             logger.error(f"Error in payer/payee validation: {e}")
             return False
     
-    def _validate_npi_luhn(self, npi: str) -> bool:
-        """Validate NPI using Luhn algorithm."""
-        try:
-            # Luhn algorithm check
-            total = 0
-            for i, digit in enumerate(npi):
-                n = int(digit)
-                if i % 2 == 0:
-                    n *= 2
-                    if n > 9:
-                        n = n // 10 + n % 10
-                total += n
-            
-            return total % 10 == 0
-        except:
-            return False
 
 
 def get_835_business_rules() -> List[ValidationRule]:

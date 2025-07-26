@@ -8,6 +8,7 @@ should inherit from, providing a consistent interface and common functionality.
 from abc import ABC, abstractmethod
 from typing import List, Dict, Any, Optional, Union
 import logging
+from .utils import get_element, safe_float, safe_int, format_edi_date, format_edi_time
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +65,7 @@ class BaseParser(ABC):
             The first matching segment or None if not found
         """
         for segment in self.segments:
-            if segment and segment[0] == segment_id:
+            if segment and get_element(segment, 0) == segment_id:
                 return segment
         return None
     
@@ -80,25 +81,16 @@ class BaseParser(ABC):
         """
         matching_segments = []
         for segment in self.segments:
-            if segment and segment[0] == segment_id:
+            if segment and get_element(segment, 0) == segment_id:
                 matching_segments.append(segment)
         return matching_segments
     
     def _get_element(self, segment: List[str], index: int, default: str = "") -> str:
         """
         Safely get an element from a segment.
-        
-        Args:
-            segment: The segment to extract from
-            index: The element index
-            default: Default value if element doesn't exist
-            
-        Returns:
-            The element value or default
+        DEPRECATED: Use utils.get_element() instead.
         """
-        if segment and len(segment) > index:
-            return segment[index].strip()
-        return default
+        return get_element(segment, index, default)
     
     def _parse_header(self, transaction: Any) -> None:
         """
@@ -110,8 +102,8 @@ class BaseParser(ABC):
         st_segment = self._find_segment("ST")
         if st_segment:
             transaction.header = {
-                "transaction_set_identifier": self._get_element(st_segment, 1),
-                "transaction_set_control_number": self._get_element(st_segment, 2),
+                "transaction_set_identifier": get_element(st_segment, 1),
+                "transaction_set_control_number": get_element(st_segment, 2),
             }
         else:
             transaction.header = {}
@@ -119,76 +111,37 @@ class BaseParser(ABC):
     def _safe_float(self, value: str, default: float = 0.0) -> float:
         """
         Safely convert a string to float.
-        
-        Args:
-            value: String value to convert
-            default: Default value if conversion fails
-            
-        Returns:
-            Float value or default
+        DEPRECATED: Use utils.safe_float() instead.
         """
-        try:
-            return float(value) if value and value.strip() else default
-        except (ValueError, TypeError):
-            return default
+        return safe_float(value, default)
             
     def _safe_int(self, value: str, default: int = 0) -> int:
         """
         Safely convert a string to integer.
-        
-        Args:
-            value: String value to convert
-            default: Default value if conversion fails
-            
-        Returns:
-            Integer value or default
+        DEPRECATED: Use utils.safe_int() instead.
         """
-        try:
-            return int(value) if value and value.strip() else default
-        except (ValueError, TypeError):
-            return default
+        return safe_int(value, default)
     
     def _format_date_ccyymmdd(self, date: str) -> str:
         """
         Format CCYYMMDD date to YYYY-MM-DD.
-        
-        Args:
-            date: Date string in CCYYMMDD format
-            
-        Returns:
-            Formatted date string or original if invalid
+        DEPRECATED: Use utils.format_edi_date() instead.
         """
-        if date and len(date) == 8 and date.isdigit():
-            return f"{date[0:4]}-{date[4:6]}-{date[6:8]}"
-        return date
+        return format_edi_date(date, "CCYYMMDD")
     
     def _format_date_yymmdd(self, date: str) -> str:
         """
         Format YYMMDD date to YYYY-MM-DD (assumes 20xx century).
-        
-        Args:
-            date: Date string in YYMMDD format
-            
-        Returns:
-            Formatted date string or original if invalid
+        DEPRECATED: Use utils.format_edi_date() instead.
         """
-        if date and len(date) == 6 and date.isdigit():
-            return f"20{date[0:2]}-{date[2:4]}-{date[4:6]}"
-        return date
+        return format_edi_date(date, "YYMMDD")
     
     def _format_time(self, time: str) -> str:
         """
         Format HHMM time to HH:MM.
-        
-        Args:
-            time: Time string in HHMM format
-            
-        Returns:
-            Formatted time string or original if invalid
+        DEPRECATED: Use utils.format_edi_time() instead.
         """
-        if time and len(time) == 4 and time.isdigit():
-            return f"{time[0:2]}:{time[2:4]}"
-        return time
+        return format_edi_time(time, "HHMM")
     
     def validate_segments(self, segments: List[List[str]]) -> bool:
         """
@@ -206,12 +159,12 @@ class BaseParser(ABC):
         # Check for ST segment with supported transaction code
         st_segment = None
         for segment in segments:
-            if segment and segment[0] == "ST":
+            if segment and get_element(segment, 0) == "ST":
                 st_segment = segment
                 break
                 
         if not st_segment or len(st_segment) < 2:
             return False
             
-        transaction_code = st_segment[1]
+        transaction_code = get_element(st_segment, 1)
         return transaction_code in self.get_transaction_codes()
