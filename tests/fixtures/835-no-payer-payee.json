@@ -1,0 +1,58 @@
+{
+    "interchanges": [
+        {
+            "header": {
+                "sender_id": "NOPAYER",
+                "receiver_id": "NOPAYEE",
+                "date": "2023-01-01",
+                "time": "00:00",
+                "control_number": "000000001"
+            },
+            "functional_groups": [
+                {
+                    "header": {
+                        "functional_group_code": "HP",
+                        "sender_id": "NOPAYER",
+                        "receiver_id": "NOPAYEE",
+                        "date": "2023-01-01",
+                        "time": "00:00",
+                        "control_number": "1"
+                    },
+                    "transactions": [
+                        {
+                            "header": {
+                                "transaction_set_code": "835",
+                                "control_number": "0001"
+                            },
+                            "financial_information": {
+                                "total_paid": 100,
+                                "payment_method": "CHK",
+                                "payment_date": "2023-01-01"
+                            },
+                            "claims": [
+                                {
+                                    "claim_id": "SIMPLE",
+                                    "status_code": 1,
+                                    "total_charge": 100,
+                                    "total_paid": 100,
+                                    "patient_responsibility": 0,
+                                    "payer_control_number": "CTRL123",
+                                    "adjustments": [],
+                                    "services": [
+                                        {
+                                            "service_code": "HC:SIMPLE",
+                                            "charge_amount": 100,
+                                            "paid_amount": 100,
+                                            "revenue_code": "1",
+                                            "service_date": ""
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

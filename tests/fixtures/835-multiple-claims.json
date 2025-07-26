@@ -1,0 +1,139 @@
+{
+    "interchanges": [
+        {
+            "header": {
+                "sender_id": "MULTI",
+                "receiver_id": "CLAIMS",
+                "date": "2023-01-01",
+                "time": "00:00",
+                "control_number": "000000001"
+            },
+            "functional_groups": [
+                {
+                    "header": {
+                        "functional_group_code": "HP",
+                        "sender_id": "MULTI",
+                        "receiver_id": "CLAIMS",
+                        "date": "2023-01-01",
+                        "time": "00:00",
+                        "control_number": "1"
+                    },
+                    "transactions": [
+                        {
+                            "header": {
+                                "transaction_set_code": "835",
+                                "control_number": "0001"
+                            },
+                            "financial_information": {
+                                "total_paid": 500,
+                                "payment_method": "CHK",
+                                "payment_date": "2023-01-01"
+                            },
+                            "reference_numbers": [
+                                {
+                                    "type": "trace_number",
+                                    "value": "9999999999"
+                                }
+                            ],
+                            "dates": [
+                                {
+                                    "type": "production_date",
+                                    "date": "2023-01-01"
+                                }
+                            ],
+                            "payer": {
+                                "name": "INSURANCE COMPANY A"
+                            },
+                            "payee": {
+                                "name": "PROVIDER CLINIC",
+                                "npi": "9876543210"
+                            },
+                            "claims": [
+                                {
+                                    "claim_id": "CLAIM001",
+                                    "status_code": 1,
+                                    "total_charge": 200,
+                                    "total_paid": 150,
+                                    "patient_responsibility": 50,
+                                    "payer_control_number": "PAY001",
+                                    "adjustments": [
+                                        {
+                                            "group_code": "CO",
+                                            "reason_code": "97",
+                                            "amount": 30,
+                                            "quantity": 1
+                                        },
+                                        {
+                                            "group_code": "PR",
+                                            "reason_code": "1",
+                                            "amount": 20,
+                                            "quantity": 1
+                                        }
+                                    ],
+                                    "services": [
+                                        {
+                                            "service_code": "HC:99213",
+                                            "charge_amount": 200,
+                                            "paid_amount": 150,
+                                            "revenue_code": "21",
+                                            "service_date": "2023-01-01"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "claim_id": "CLAIM002",
+                                    "status_code": 1,
+                                    "total_charge": 150,
+                                    "total_paid": 150,
+                                    "patient_responsibility": 0,
+                                    "payer_control_number": "PAY002",
+                                    "adjustments": [],
+                                    "services": [
+                                        {
+                                            "service_code": "HC:99214",
+                                            "charge_amount": 150,
+                                            "paid_amount": 150,
+                                            "revenue_code": "21",
+                                            "service_date": "2023-01-02"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "claim_id": "CLAIM003",
+                                    "status_code": 2,
+                                    "total_charge": 300,
+                                    "total_paid": 200,
+                                    "patient_responsibility": 100,
+                                    "payer_control_number": "PAY003",
+                                    "adjustments": [
+                                        {
+                                            "group_code": "CO",
+                                            "reason_code": "45",
+                                            "amount": 50,
+                                            "quantity": 1
+                                        },
+                                        {
+                                            "group_code": "PR",
+                                            "reason_code": "2",
+                                            "amount": 50,
+                                            "quantity": 1
+                                        }
+                                    ],
+                                    "services": [
+                                        {
+                                            "service_code": "HC:99215",
+                                            "charge_amount": 300,
+                                            "paid_amount": 200,
+                                            "revenue_code": "21",
+                                            "service_date": "2023-01-03"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

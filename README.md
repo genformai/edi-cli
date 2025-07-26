@@ -8,7 +8,7 @@ A modern, open-source EDI toolkit.
 
 We believe that core EDI parsing and validation should be a commodity. By open-sourcing the core, we aim to foster a community of contributors and build a robust foundation for a wide range of EDI applications. Our open-core model allows us to offer a free, powerful toolkit for developers while providing a clear path to commercial, enterprise-grade features like a hosted API, SFTP watchers, and advanced auditing capabilities.
 
-## Quickstart (10 minutes)
+## Quickstart (5 minutes)
 
 1.  **Install `edi-cli`:**
 
@@ -22,19 +22,30 @@ We believe that core EDI parsing and validation should be a commodity. By open-s
     edi convert examples/datasets/sample-835.edi --to json --out output.json
     ```
 
-3.  **Validate an EDI file:**
+3.  **Convert to CSV for analysis:**
 
     ```bash
-    edi validate examples/datasets/sample-835.edi --schema x12-835-5010 --rules hipaa/basic.yml
+    edi convert examples/datasets/sample-835.edi --to csv --out claims.csv
+    ```
+
+4.  **Validate an EDI file:**
+
+    ```bash
+    edi validate examples/datasets/sample-835.edi --schema x12-835-5010
+    ```
+
+5.  **Inspect file structure:**
+
+    ```bash
+    edi inspect examples/datasets/sample-835.edi
     ```
 
 ## Roadmap
 
-*   **v0.1:** 835 parse → JSON/CSV, CLI, tests, docs.
+*   **v0.1:** ✅ 835 parse → JSON/CSV, CLI, tests, docs.
 *   **v0.2:** 835 validation DSL.
 *   **v0.3:** 837P support, plugin API.
 *   **v0.4:** FastAPI service, Docker, auth stub.
-*   **v0.5:** SFTP watcher prototype (enterprise path).
 
 ## Contributing
 
