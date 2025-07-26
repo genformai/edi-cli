@@ -3,9 +3,9 @@ EDI 835 (Electronic Remittance Advice) Transaction Parser Plugin
 """
 
 from typing import List, Type, Optional
-from ..plugin_api import TransactionParserPlugin
-from ..ast import EdiRoot, Interchange, FunctionalGroup, Transaction
-from ..ast_835 import (
+from ..api import TransactionParserPlugin
+from ...base.edi_ast import EdiRoot, Interchange, FunctionalGroup, Transaction
+from ...transactions.t835.ast import (
     Transaction835,
     FinancialInformation,
     Payer,
@@ -14,7 +14,7 @@ from ..ast_835 import (
     Adjustment,
     Service,
 )
-from ..utils import get_element, safe_float, safe_int, format_edi_date, format_edi_time
+from ...utils import get_element, safe_float, safe_int, format_edi_date, format_edi_time
 
 
 

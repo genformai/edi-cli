@@ -7,7 +7,7 @@ the EDI parser with custom transaction sets.
 
 from abc import ABC, abstractmethod
 from typing import Dict, List, Any, Optional, Type, Protocol
-from .ast import EdiRoot, Transaction
+from ..base.edi_ast import EdiRoot, Transaction
 
 
 class TransactionParserPlugin(ABC):

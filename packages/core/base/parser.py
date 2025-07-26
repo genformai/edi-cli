@@ -8,7 +8,7 @@ should inherit from, providing a consistent interface and common functionality.
 from abc import ABC, abstractmethod
 from typing import List, Dict, Any, Optional, Union
 import logging
-from .utils import get_element, safe_float, safe_int, format_edi_date, format_edi_time
+from ..utils import get_element, safe_float, safe_int, format_edi_date, format_edi_time
 
 logger = logging.getLogger(__name__)
 

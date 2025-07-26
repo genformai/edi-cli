@@ -1,5 +1,12 @@
 """
-Built-in EDI Transaction Parser Plugins
+EDI Transaction Parser Plugins.
 
-This package contains the built-in plugins for parsing standard EDI transaction sets.
+This package provides the plugin system for EDI transaction parsing,
+including the plugin API and concrete plugin implementations.
 """
+
+from .api import TransactionParserPlugin
+
+__all__ = [
+    'TransactionParserPlugin'
+]

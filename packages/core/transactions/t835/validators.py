@@ -6,9 +6,9 @@ EDI 835 Electronic Remittance Advice transactions.
 """
 
 from typing import Dict, List, Any, Optional
-from .validation import ValidationRule, ValidationError, ValidationSeverity, ValidationCategory, BusinessRule
-from .ast import EdiRoot
-from .utils import validate_npi
+from ...base.validation import ValidationRule, ValidationError, ValidationSeverity, ValidationCategory, BusinessRule
+from ...base.edi_ast import EdiRoot
+from ...utils import validate_npi
 import logging
 
 logger = logging.getLogger(__name__)

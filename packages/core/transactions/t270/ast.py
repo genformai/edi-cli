@@ -7,7 +7,7 @@ Eligibility Inquiry and Response transactions.
 
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass
-from .ast import Node
+from ...base.edi_ast import Node
 
 
 @dataclass

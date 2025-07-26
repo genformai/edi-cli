@@ -7,8 +7,8 @@ and Response transactions, building the AST structures defined in ast_276.py.
 
 from typing import Dict, List, Any, Optional
 import logging
-from .base_parser import BaseParser
-from .ast_276 import (
+from ...base.parser import BaseParser
+from .ast import (
     Transaction276, Transaction277, InformationSourceInfo276, InformationReceiverInfo276,
     ProviderInfo276, SubscriberInfo276, PatientInfo276, ClaimStatusInquiry,
     ClaimStatusInfo, ServiceLineStatusInfo, StatusMessage

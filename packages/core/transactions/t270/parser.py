@@ -2,13 +2,13 @@
 EDI 270/271 (Eligibility Inquiry/Response) Parser
 
 This module provides parsing capabilities for EDI 270/271 Eligibility Inquiry
-and Response transactions, building the AST structures defined in ast_270.py.
+and Response transactions, building the AST structures defined in ast.py.
 """
 
 from typing import Dict, List, Any, Optional
 import logging
-from .base_parser import BaseParser
-from .ast_270 import (
+from ...base.parser import BaseParser
+from .ast import (
     Transaction270, Transaction271, InformationSourceInfo, InformationReceiverInfo,
     SubscriberEligibilityInfo, DependentEligibilityInfo, EligibilityInquiry,
     EligibilityBenefit, EligibilityMessage

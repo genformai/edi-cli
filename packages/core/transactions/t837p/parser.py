@@ -7,8 +7,8 @@ transactions, building the AST structures defined in ast_837p.py.
 
 from typing import Dict, List, Any, Optional
 import logging
-from .base_parser import BaseParser
-from .ast_837p import (
+from ...base.parser import BaseParser
+from .ast import (
     Transaction837P, SubmitterInfo, ReceiverInfo, BillingProviderInfo,
     SubscriberInfo, PatientInfo, ClaimInfo837P, ServiceLine837P,
     DiagnosisInfo, RenderingProviderInfo

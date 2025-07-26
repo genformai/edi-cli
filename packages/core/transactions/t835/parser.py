@@ -2,14 +2,14 @@
 EDI 835 (Healthcare Claim Payment/Advice) Parser
 
 This module provides parsing capabilities for EDI 835 Healthcare Claim Payment/Advice
-transactions, building the AST structures defined in ast_835.py.
+transactions, building the AST structures defined in ast.py.
 """
 
 from typing import List, Optional
 import logging
-from .base_parser import BaseParser
-from .ast import EdiRoot, Interchange, FunctionalGroup, Transaction
-from .ast_835 import (
+from ...base.parser import BaseParser
+from ...base.edi_ast import EdiRoot, Interchange, FunctionalGroup, Transaction
+from .ast import (
     Transaction835,
     FinancialInformation,
     Payer,

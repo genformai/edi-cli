@@ -11,9 +11,9 @@ import json
 from typing import List, Optional, Dict, Any
 import logging
 from .schema import EdiSchema
-from .ast import EdiRoot, Interchange, FunctionalGroup, Transaction
-from .ast_835 import Transaction835, FinancialInformation, Payer, Payee, Claim, Adjustment, Service
-from .plugin_api import plugin_registry, PluginManager
+from .base.edi_ast import EdiRoot, Interchange, FunctionalGroup, Transaction
+from .transactions.t835.ast import Transaction835, FinancialInformation, Payer, Payee, Claim, Adjustment, Service
+from .plugins.api import plugin_registry, PluginManager
 
 logger = logging.getLogger(__name__)
 
