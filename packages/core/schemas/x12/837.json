@@ -1,0 +1,131 @@
+{
+  "name": "x12-837-5010",
+  "version": "5010",
+  "description": "X12 837P Professional Claims Schema",
+  "transaction_set": "837",
+  "schema": {
+    "delimiters": {
+      "segment": "~",
+      "element": "*",
+      "sub_element": ":",
+      "repetition": "^"
+    },
+    "segments": {
+      "ISA": {
+        "name": "Interchange Control Header",
+        "elements": [
+          {"name": "authorization_information_qualifier", "type": "string", "length": 2},
+          {"name": "authorization_information", "type": "string", "length": 10},
+          {"name": "security_information_qualifier", "type": "string", "length": 2},
+          {"name": "security_information", "type": "string", "length": 10},
+          {"name": "interchange_id_qualifier", "type": "string", "length": 2},
+          {"name": "interchange_sender_id", "type": "string", "length": 15},
+          {"name": "interchange_id_qualifier", "type": "string", "length": 2},
+          {"name": "interchange_receiver_id", "type": "string", "length": 15},
+          {"name": "interchange_date", "type": "string", "length": 6},
+          {"name": "interchange_time", "type": "string", "length": 4},
+          {"name": "repetition_separator", "type": "string", "length": 1},
+          {"name": "interchange_control_version_number", "type": "string", "length": 5},
+          {"name": "interchange_control_number", "type": "string", "length": 9},
+          {"name": "acknowledgment_requested", "type": "string", "length": 1},
+          {"name": "usage_indicator", "type": "string", "length": 1},
+          {"name": "component_element_separator", "type": "string", "length": 1}
+        ]
+      },
+      "GS": {
+        "name": "Functional Group Header",
+        "elements": [
+          {"name": "functional_identifier_code", "type": "string", "length": 2},
+          {"name": "application_sender_code", "type": "string", "length": 15},
+          {"name": "application_receiver_code", "type": "string", "length": 15},
+          {"name": "date", "type": "string", "length": 8},
+          {"name": "time", "type": "string", "length": 8},
+          {"name": "group_control_number", "type": "string", "length": 9},
+          {"name": "responsible_agency_code", "type": "string", "length": 2},
+          {"name": "version_release_identifier_code", "type": "string", "length": 12}
+        ]
+      },
+      "ST": {
+        "name": "Transaction Set Header", 
+        "elements": [
+          {"name": "transaction_set_identifier_code", "type": "string", "length": 3},
+          {"name": "transaction_set_control_number", "type": "string", "length": 9}
+        ]
+      },
+      "BHT": {
+        "name": "Beginning of Hierarchical Transaction",
+        "elements": [
+          {"name": "hierarchical_structure_code", "type": "string", "length": 4},
+          {"name": "transaction_set_purpose_code", "type": "string", "length": 2},
+          {"name": "reference_identification", "type": "string", "length": 50},
+          {"name": "date", "type": "string", "length": 8},
+          {"name": "time", "type": "string", "length": 8},
+          {"name": "transaction_type_code", "type": "string", "length": 2}
+        ]
+      },
+      "HL": {
+        "name": "Hierarchical Level",
+        "elements": [
+          {"name": "hierarchical_id_number", "type": "string", "length": 12},
+          {"name": "hierarchical_parent_id_number", "type": "string", "length": 12},
+          {"name": "hierarchical_level_code", "type": "string", "length": 2},
+          {"name": "hierarchical_child_code", "type": "string", "length": 1}
+        ]
+      },
+      "NM1": {
+        "name": "Individual or Organizational Name",
+        "elements": [
+          {"name": "entity_identifier_code", "type": "string", "length": 3},
+          {"name": "entity_type_qualifier", "type": "string", "length": 1},
+          {"name": "name_last_or_organization_name", "type": "string", "length": 60},
+          {"name": "name_first", "type": "string", "length": 35},
+          {"name": "name_middle", "type": "string", "length": 25},
+          {"name": "name_prefix", "type": "string", "length": 10},
+          {"name": "name_suffix", "type": "string", "length": 10},
+          {"name": "identification_code_qualifier", "type": "string", "length": 2},
+          {"name": "identification_code", "type": "string", "length": 80}
+        ]
+      },
+      "CLM": {
+        "name": "Claim Information",
+        "elements": [
+          {"name": "claim_submitter_identifier", "type": "string", "length": 38},
+          {"name": "monetary_amount", "type": "string", "length": 18},
+          {"name": "place_of_service_code", "type": "string", "length": 2},
+          {"name": "claim_frequency_type_code", "type": "string", "length": 1},
+          {"name": "yes_no_condition_or_response_code", "type": "string", "length": 1},
+          {"name": "provider_accept_assignment_code", "type": "string", "length": 1},
+          {"name": "yes_no_condition_or_response_code", "type": "string", "length": 1},
+          {"name": "release_of_information_code", "type": "string", "length": 1}
+        ]
+      },
+      "SV1": {
+        "name": "Professional Service",
+        "elements": [
+          {"name": "product_service_id", "type": "string", "length": 48},
+          {"name": "monetary_amount", "type": "string", "length": 18},
+          {"name": "unit_or_basis_for_measurement_code", "type": "string", "length": 2},
+          {"name": "quantity", "type": "string", "length": 15},
+          {"name": "facility_code_value", "type": "string", "length": 2},
+          {"name": "service_type_code", "type": "string", "length": 2},
+          {"name": "diagnosis_code_pointer", "type": "string", "length": 4},
+          {"name": "monetary_amount", "type": "string", "length": 18},
+          {"name": "yes_no_condition_or_response_code", "type": "string", "length": 1}
+        ]
+      },
+      "HI": {
+        "name": "Health Care Diagnosis Code",
+        "elements": [
+          {"name": "diagnosis_type_code", "type": "string", "length": 3},
+          {"name": "diagnosis_code", "type": "string", "length": 30},
+          {"name": "diagnosis_type_code", "type": "string", "length": 3},
+          {"name": "diagnosis_code", "type": "string", "length": 30},
+          {"name": "diagnosis_type_code", "type": "string", "length": 3},
+          {"name": "diagnosis_code", "type": "string", "length": 30},
+          {"name": "diagnosis_type_code", "type": "string", "length": 3},
+          {"name": "diagnosis_code", "type": "string", "length": 30}
+        ]
+      }
+    }
+  }
+}

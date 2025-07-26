@@ -58,6 +58,7 @@ class Transaction(Node):
         self.payer: Optional[Payer] = None
         self.payee: Optional[Payee] = None
         self.claims: List[Claim] = []
+        self.healthcare_transaction: Optional[Any] = None  # For 837P, 270/271, etc.
 
     def to_dict(self) -> Dict[str, Any]:
         data = {"header": self.header}
@@ -73,6 +74,8 @@ class Transaction(Node):
             data["payee"] = self.payee.to_dict()
         if self.claims:
             data["claims"] = [claim.to_dict() for claim in self.claims]
+        if self.healthcare_transaction:
+            data["healthcare_transaction"] = self.healthcare_transaction.to_dict()
         return data
 
 class FinancialInformation(Node):

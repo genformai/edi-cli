@@ -12,6 +12,10 @@ from .ast import (
     Adjustment,
     Service,
 )
+from .parser_837p import Parser837P
+from .ast_837p import Transaction837P
+from .parser_270 import Parser270
+from .ast_270 import Transaction270, Transaction271
 
 def _format_yymmdd(date: str) -> str:
     """Formats YYMMDD to YYYY-MM-DD."""
@@ -45,15 +49,178 @@ class EdiParser:
         segments = edi_content.split(self.segment_delimiter)
         segments = [s for s in segments if s]
 
+        # Convert string segments to lists for easier processing
+        segment_lists = []
+        for segment_str in segments:
+            parts = segment_str.split(self.element_delimiter)
+            segment_lists.append(parts)
+
+        # Detect transaction type and route to appropriate parser
+        transaction_type = self._detect_transaction_type(segment_lists)
+        
+        if transaction_type == "837":
+            return self._parse_837p(segment_lists)
+        elif transaction_type == "270" or transaction_type == "271":
+            return self._parse_270_271(segment_lists)
+        else:
+            # Default to 835 parsing
+            return self._parse_835(segment_lists)
+    
+    def _detect_transaction_type(self, segments: list) -> str:
+        """Detect the transaction type from ST segment."""
+        for segment in segments:
+            if segment[0] == "ST" and len(segment) > 1:
+                transaction_code = segment[1]
+                if transaction_code == "837":
+                    return "837"
+                elif transaction_code == "835":
+                    return "835"
+                elif transaction_code == "270":
+                    return "270"
+                elif transaction_code == "271":
+                    return "271"
+        return "835"  # Default to 835
+    
+    def _parse_837p(self, segments: list) -> EdiRoot:
+        """Parse 837P Professional Claims transaction."""
+        root = EdiRoot()
+        
+        # Create a basic interchange structure
+        interchange = Interchange(
+            sender_id="",
+            receiver_id="", 
+            date="",
+            time="",
+            control_number=""
+        )
+        
+        # Parse ISA segment for interchange info
+        isa_segment = next((s for s in segments if s[0] == "ISA"), None)
+        if isa_segment and len(isa_segment) > 12:
+            interchange.sender_id = isa_segment[6].strip()
+            interchange.receiver_id = isa_segment[8].strip()
+            interchange.date = _format_yymmdd(isa_segment[9])
+            interchange.time = _format_time(isa_segment[10])
+            interchange.control_number = isa_segment[13]
+        
+        # Create functional group
+        functional_group = FunctionalGroup(
+            functional_group_code="",
+            sender_id="",
+            receiver_id="",
+            date="",
+            time="",
+            control_number=""
+        )
+        
+        # Parse GS segment for functional group info
+        gs_segment = next((s for s in segments if s[0] == "GS"), None)
+        if gs_segment and len(gs_segment) > 5:
+            functional_group.functional_group_code = gs_segment[1]
+            functional_group.sender_id = gs_segment[2]
+            functional_group.receiver_id = gs_segment[3]
+            functional_group.date = _format_ccyymmdd(gs_segment[4])
+            functional_group.time = _format_time(gs_segment[5])
+            functional_group.control_number = gs_segment[6]
+        
+        # Parse 837P specific content
+        parser_837p = Parser837P(segments)
+        transaction_837p = parser_837p.parse()
+        
+        # Create a generic transaction wrapper for the 837P data
+        transaction = Transaction(
+            transaction_set_code="837",
+            control_number=transaction_837p.header.get("transaction_set_control_number", "")
+        )
+        
+        # Store the 837P transaction in the generic transaction
+        transaction.healthcare_transaction = transaction_837p
+        
+        functional_group.transactions.append(transaction)
+        interchange.functional_groups.append(functional_group)
+        root.interchanges.append(interchange)
+        
+        return root
+    
+    def _parse_270_271(self, segments: list) -> EdiRoot:
+        """Parse 270/271 Eligibility Inquiry/Response transaction."""
+        root = EdiRoot()
+        
+        # Create a basic interchange structure
+        interchange = Interchange(
+            sender_id="",
+            receiver_id="", 
+            date="",
+            time="",
+            control_number=""
+        )
+        
+        # Parse ISA segment for interchange info
+        isa_segment = next((s for s in segments if s[0] == "ISA"), None)
+        if isa_segment and len(isa_segment) > 12:
+            interchange.sender_id = isa_segment[6].strip()
+            interchange.receiver_id = isa_segment[8].strip()
+            interchange.date = _format_yymmdd(isa_segment[9])
+            interchange.time = _format_time(isa_segment[10])
+            interchange.control_number = isa_segment[13]
+        
+        # Create functional group
+        functional_group = FunctionalGroup(
+            functional_group_code="",
+            sender_id="",
+            receiver_id="",
+            date="",
+            time="",
+            control_number=""
+        )
+        
+        # Parse GS segment for functional group info
+        gs_segment = next((s for s in segments if s[0] == "GS"), None)
+        if gs_segment and len(gs_segment) > 5:
+            functional_group.functional_group_code = gs_segment[1]
+            functional_group.sender_id = gs_segment[2]
+            functional_group.receiver_id = gs_segment[3]
+            functional_group.date = _format_ccyymmdd(gs_segment[4])
+            functional_group.time = _format_time(gs_segment[5])
+            functional_group.control_number = gs_segment[6]
+        
+        # Parse 270/271 specific content
+        parser_270 = Parser270(segments)
+        healthcare_transaction = parser_270.parse()
+        
+        # Determine transaction set code
+        transaction_code = "270"
+        st_segment = next((s for s in segments if s[0] == "ST"), None)
+        if st_segment and len(st_segment) > 1:
+            transaction_code = st_segment[1]
+        
+        # Create a generic transaction wrapper for the 270/271 data
+        transaction = Transaction(
+            transaction_set_code=transaction_code,
+            control_number=healthcare_transaction.header.get("transaction_set_control_number", "")
+        )
+        
+        # Store the 270/271 transaction in the generic transaction
+        transaction.healthcare_transaction = healthcare_transaction
+        
+        functional_group.transactions.append(transaction)
+        interchange.functional_groups.append(functional_group)
+        root.interchanges.append(interchange)
+        
+        return root
+    
+    def _parse_835(self, segments: list) -> EdiRoot:
+        """Parse 835 ERA transaction (original logic)."""
+        root = EdiRoot()
+
         interchange: Interchange = None
         functional_group: FunctionalGroup = None
         transaction: Transaction = None
         claim: Claim = None
 
-        for segment_str in segments:
-            parts = segment_str.split(self.element_delimiter)
-            segment_id = parts[0]
-            elements = parts[1:]
+        for segment in segments:
+            segment_id = segment[0]
+            elements = segment[1:]
 
             if segment_id == "ISA":
                 interchange = Interchange(

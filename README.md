@@ -66,6 +66,7 @@ Our vision is to build the most comprehensive, developer-friendly EDI toolkit fo
 - Healthcare-specific data transformations
 
 #### **v0.4:** **Claims Processing Suite** *(Q4 2024)*
+- **AST Architecture Refactor**: Clean separation with transaction-specific AST modules (ast_835.py, ast_837p.py, etc.)
 - **837I** (Institutional Claims) support
 - **837D** (Dental Claims) support  
 - **278** (Healthcare Services Review) parsing

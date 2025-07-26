@@ -1,0 +1,176 @@
+# HIPAA Compliance Basic Validation Rules
+# Healthcare EDI HIPAA compliance validation rules
+
+version: "0.2.0"
+scope: "hipaa_compliance"
+description: "Basic HIPAA compliance validation rules for healthcare EDI transactions"
+
+rules:
+  # Provider Identifier Validation
+  - id: "HIPAA_NPI_LUHN_CHECK"
+    type: "field"
+    description: "NPI must pass Luhn algorithm check"
+    field_path: "payee.npi"
+    validation_type: "custom"
+    validator: "validate_npi"
+    severity: "error"
+    category: "hipaa"
+
+  - id: "HIPAA_NPI_REQUIRED_BILLING"
+    type: "field"
+    description: "NPI is required for billing providers under HIPAA"
+    field_path: "payee.npi"
+    validation_type: "required"
+    severity: "error"
+    category: "hipaa"
+
+  # Date Format Compliance
+  - id: "HIPAA_DATE_STANDARD_FORMAT"
+    type: "field"
+    description: "Dates must follow HIPAA standard format (CCYYMMDD converted to YYYY-MM-DD)"
+    field_path: "financial_information.payment_date"
+    validation_type: "regex"
+    pattern: "^\\d{4}-\\d{2}-\\d{2}$"
+    severity: "error"
+    category: "hipaa"
+
+  - id: "HIPAA_SERVICE_DATE_FORMAT"
+    type: "field"
+    description: "Service dates must follow HIPAA standard format"
+    field_path: "services.*.service_date"
+    validation_type: "regex"
+    pattern: "^(\\d{4}-\\d{2}-\\d{2}|)$"
+    severity: "error"
+    category: "hipaa"
+
+  # Control Number Requirements
+  - id: "HIPAA_INTERCHANGE_CONTROL_UNIQUE"
+    type: "field"
+    description: "Interchange control numbers should be unique within sender/receiver pair"
+    field_path: "interchanges.*.header.control_number"
+    validation_type: "required"
+    severity: "warning"
+    category: "hipaa"
+
+  - id: "HIPAA_TRANSACTION_CONTROL_REQUIRED"
+    type: "field"
+    description: "Transaction control numbers are required under HIPAA"
+    field_path: "transactions.*.header.control_number"
+    validation_type: "required"
+    severity: "error"
+    category: "hipaa"
+
+  # Amount Format Requirements
+  - id: "HIPAA_AMOUNT_PRECISION"
+    type: "field"
+    description: "Monetary amounts must not exceed 2 decimal places"
+    field_path: "financial_information.total_paid"
+    validation_type: "custom"
+    validator: "validate_amount_format"
+    severity: "error"
+    category: "hipaa"
+
+  - id: "HIPAA_CLAIM_AMOUNT_PRECISION"
+    type: "field"
+    description: "Claim amounts must not exceed 2 decimal places"
+    field_path: "claims.*.total_charge"
+    validation_type: "custom"
+    validator: "validate_amount_format"
+    severity: "error"
+    category: "hipaa"
+
+  - id: "HIPAA_PAID_AMOUNT_PRECISION"
+    type: "field"
+    description: "Paid amounts must not exceed 2 decimal places"
+    field_path: "claims.*.total_paid"
+    validation_type: "custom"
+    validator: "validate_amount_format"
+    severity: "error"
+    category: "hipaa"
+
+  # Entity Identifier Requirements
+  - id: "HIPAA_ENTITY_IDENTIFIER_REQUIRED"
+    type: "field"
+    description: "Entity identifiers are required for healthcare entities"
+    field_path: "payer.name"
+    validation_type: "required"
+    severity: "warning"
+    category: "hipaa"
+
+  # Transaction Set Requirements
+  - id: "HIPAA_TRANSACTION_SET_CODE"
+    type: "field"
+    description: "Transaction set code must be valid for HIPAA transactions"
+    field_path: "transactions.*.header.transaction_set_code"
+    validation_type: "regex"
+    pattern: "^(835|837|270|271|276|277|278|834)$"
+    severity: "error"
+    category: "hipaa"
+
+  # Adjustment Code Validation
+  - id: "HIPAA_ADJUSTMENT_GROUP_CODES"
+    type: "field"
+    description: "Adjustment group codes must be HIPAA-compliant"
+    field_path: "adjustments.*.group_code"
+    validation_type: "regex"
+    pattern: "^(CO|CR|OA|PI|PR)$"
+    severity: "error"
+    category: "hipaa"
+
+  - id: "HIPAA_CLAIM_ADJUSTMENT_REASON_CODES"
+    type: "field"
+    description: "Claim adjustment reason codes must be from approved HIPAA code set"
+    field_path: "adjustments.*.reason_code"
+    validation_type: "regex"
+    pattern: "^[A-Z0-9]{1,5}$"
+    severity: "warning"
+    category: "hipaa"
+
+  # Data Element Requirements
+  - id: "HIPAA_REQUIRED_DATA_ELEMENTS"
+    type: "field"
+    description: "Required HIPAA data elements must be present"
+    field_path: "claims.*.claim_id"
+    validation_type: "required"
+    severity: "error"
+    category: "hipaa"
+
+  - id: "HIPAA_PAYER_CONTROL_NUMBER"
+    type: "field"
+    description: "Payer control number format must be valid"
+    field_path: "claims.*.payer_control_number"
+    validation_type: "length"
+    min_length: 1
+    max_length: 38
+    severity: "warning"
+    category: "hipaa"
+
+  # Trading Partner Requirements
+  - id: "HIPAA_SENDER_QUALIFIER"
+    type: "field"
+    description: "Sender ID qualifier must be valid for healthcare"
+    field_path: "interchanges.*.header.sender_id"
+    validation_type: "length"
+    min_length: 2
+    max_length: 15
+    severity: "error"
+    category: "hipaa"
+
+  - id: "HIPAA_RECEIVER_QUALIFIER"
+    type: "field"
+    description: "Receiver ID qualifier must be valid for healthcare"
+    field_path: "interchanges.*.header.receiver_id"
+    validation_type: "length"
+    min_length: 2
+    max_length: 15
+    severity: "error"
+    category: "hipaa"
+
+  # Version Control
+  - id: "HIPAA_VERSION_CONTROL"
+    type: "field"
+    description: "HIPAA transactions must use approved version (5010)"
+    field_path: "functional_groups.*.header.functional_group_code"
+    validation_type: "required"
+    severity: "info"
+    category: "hipaa"
