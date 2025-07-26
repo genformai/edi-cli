@@ -7,6 +7,7 @@ and Response transactions, building the AST structures defined in ast_270.py.
 
 from typing import Dict, List, Any, Optional
 import logging
+from .base_parser import BaseParser
 from .ast_270 import (
     Transaction270, Transaction271, InformationSourceInfo, InformationReceiverInfo,
     SubscriberEligibilityInfo, DependentEligibilityInfo, EligibilityInquiry,
@@ -16,7 +17,7 @@ from .ast_270 import (
 logger = logging.getLogger(__name__)
 
 
-class Parser270:
+class Parser270(BaseParser):
     """Parser for EDI 270/271 Eligibility Inquiry/Response transactions."""
     
     def __init__(self, segments: List[List[str]]):
@@ -36,22 +37,42 @@ class Parser270:
         
         Returns:
             Transaction270 or Transaction271: Parsed transaction object
+            
+        Raises:
+            ValueError: If unable to parse the transaction
         """
-        # Determine transaction type from ST segment
-        st_segment = self._find_segment("ST")
-        if st_segment and len(st_segment) > 1:
-            self.transaction_type = st_segment[1]
-        
-        if self.transaction_type == "270":
-            return self._parse_270()
-        elif self.transaction_type == "271":
-            return self._parse_271()
-        else:
-            # Default to 270 if unknown
-            return self._parse_270()
+        try:
+            # Determine transaction type from ST segment
+            st_segment = self._find_segment("ST")
+            if st_segment and len(st_segment) > 1:
+                self.transaction_type = st_segment[1]
+            
+            logger.debug(f"Parsing {self.transaction_type or 'unknown'} transaction")
+            
+            if self.transaction_type == "270":
+                return self._parse_270()
+            elif self.transaction_type == "271":
+                return self._parse_271()
+            else:
+                # Default to 270 if unknown
+                logger.warning(f"Unknown transaction type {self.transaction_type}, defaulting to 270")
+                return self._parse_270()
+        except Exception as e:
+            logger.error(f"Error parsing 270/271 transaction: {e}")
+            # Return minimal transaction instead of failing
+            return Transaction270(header={})
+    
+    def get_transaction_codes(self) -> List[str]:
+        """Get the transaction codes this parser supports."""
+        return ["270", "271"]
     
     def _parse_270(self) -> Transaction270:
-        """Parse 270 Eligibility Inquiry transaction."""
+        """
+        Parse 270 Eligibility Inquiry transaction.
+        
+        Returns:
+            Transaction270: Parsed eligibility inquiry transaction
+        """
         transaction = Transaction270(header={})
         
         # Parse header information
@@ -60,10 +81,16 @@ class Parser270:
         # Parse hierarchical loops
         self._parse_hierarchical_loops_270(transaction)
         
+        logger.debug(f"Parsed 270 transaction with {len(transaction.eligibility_inquiries)} inquiries")
         return transaction
     
     def _parse_271(self) -> Transaction271:
-        """Parse 271 Eligibility Response transaction."""
+        """
+        Parse 271 Eligibility Response transaction.
+        
+        Returns:
+            Transaction271: Parsed eligibility response transaction
+        """
         transaction = Transaction271(header={})
         
         # Parse header information
@@ -72,6 +99,7 @@ class Parser270:
         # Parse hierarchical loops  
         self._parse_hierarchical_loops_271(transaction)
         
+        logger.debug(f"Parsed 271 transaction with {len(transaction.eligibility_benefits)} benefits")
         return transaction
     
     def _parse_header(self, transaction):
@@ -350,16 +378,6 @@ class Parser270:
             
             transaction.messages.append(message)
     
-    def _find_segment(self, segment_id: str) -> Optional[List[str]]:
-        """Find the first segment with the given ID."""
-        for segment in self.segments:
-            if segment and segment[0] == segment_id:
-                return segment
-        return None
-    
-    def _find_all_segments(self, segment_id: str) -> List[List[str]]:
-        """Find all segments with the given ID."""
-        return [segment for segment in self.segments if segment and segment[0] == segment_id]
     
     def _find_next_segment(self, segment_id: str, after_segment: List[str]) -> Optional[List[str]]:
         """Find the next segment with the given ID after the specified segment."""

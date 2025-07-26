@@ -11,26 +11,130 @@ from packages.core.ast_270 import (
 )
 
 
+@pytest.fixture
+def sample_270_segments():
+    """Sample 270 inquiry segments."""
+    return [
+        ["ST", "270", "0001"],
+        ["BHT", "0022", "13", "INQUIRY123", "20240326", "1430", "EH"],
+        ["HL", "1", "", "20", "1"],
+        ["NM1", "PR", "2", "SAMPLE INSURANCE COMPANY", "", "", "", "", "PI", "66783"],
+        ["HL", "2", "1", "21", "1"],
+        ["NM1", "1P", "2", "SAMPLE MEDICAL CLINIC", "", "", "", "", "XX", "1234567890"],
+        ["HL", "3", "2", "22", "0"],
+        ["NM1", "IL", "1", "DOE", "JANE", "M", "", "", "MI", "MEMBER123"],
+        ["DMG", "D8", "19850215", "F"],
+        ["EQ", "30"]
+    ]
+
+
+@pytest.fixture
+def sample_271_segments():
+    """Sample 271 response segments."""
+    return [
+        ["ST", "271", "0002"],
+        ["BHT", "0022", "11", "INQUIRY123", "20240326", "1500", "RT"],
+        ["HL", "1", "", "20", "1"],
+        ["NM1", "PR", "2", "SAMPLE INSURANCE COMPANY", "", "", "", "", "PI", "66783"],
+        ["HL", "2", "1", "21", "1"],
+        ["NM1", "1P", "2", "SAMPLE MEDICAL CLINIC", "", "", "", "", "XX", "1234567890"],
+        ["HL", "3", "2", "22", "0"],
+        ["NM1", "IL", "1", "DOE", "JANE", "M", "", "", "MI", "MEMBER123"],
+        ["DMG", "D8", "19850215", "F"],
+        ["EB", "1", "IND", "30", "", "", "1", "100.00", "", "", "", "Y", "Y"],
+        ["EB", "B", "IND", "1", "", "", "1", "25.00", "", "", "", "Y", "Y"],
+        ["MSG", "MEMBER IS ELIGIBLE FOR BENEFITS"]
+    ]
+
+
+@pytest.fixture
+def sample_270_edi():
+    """Sample 270 EDI string."""
+    return """ISA*00*          *00*          *ZZ*123456789      *ZZ*987654321      *240326*1430*^*00501*000000001*1*T*:~GS*HS*123456789*987654321*20240326*1430*1*X*005010X279A1~ST*270*0001~BHT*0022*13*INQUIRY123*20240326*1430*EH~HL*1**20*1~NM1*PR*2*SAMPLE INSURANCE COMPANY*****PI*66783~HL*2*1*21*1~NM1*1P*2*SAMPLE MEDICAL CLINIC*****XX*1234567890~HL*3*2*22*0~NM1*IL*1*DOE*JANE*M***MI*MEMBER123~EQ*30~SE*11*0001~GE*1*1~IEA*1*000000001~"""
+
+
+@pytest.fixture
+def sample_271_edi():
+    """Sample 271 EDI string."""
+    return """ISA*00*          *00*          *ZZ*987654321      *ZZ*123456789      *240326*1500*^*00501*000000002*1*T*:~GS*HB*987654321*123456789*20240326*1500*2*X*005010X279A1~ST*271*0002~BHT*0022*11*INQUIRY123*20240326*1500*RT~HL*1**20*1~NM1*PR*2*SAMPLE INSURANCE COMPANY*****PI*66783~HL*2*1*21*1~NM1*1P*2*SAMPLE MEDICAL CLINIC*****XX*1234567890~HL*3*2*22*0~NM1*IL*1*DOE*JANE*M***MI*MEMBER123~EB*1*IND*30***1*100.00***Y*Y~MSG*MEMBER IS ELIGIBLE FOR BENEFITS~SE*13*0002~GE*1*2~IEA*1*000000002~"""
+
+
+@pytest.fixture
+def sample_270_dependent_segments():
+    """Sample 270 segments with dependent."""
+    return [
+        ["ST", "270", "0001"],
+        ["BHT", "0022", "13", "INQUIRY123", "20240326", "1430", "EH"],
+        ["HL", "3", "2", "22", "1"],  # Subscriber with child
+        ["NM1", "IL", "1", "DOE", "JANE", "M", "", "", "MI", "MEMBER123"],
+        ["HL", "4", "3", "23", "0"],  # Dependent
+        ["NM1", "03", "1", "DOE", "JOHN", "", "", "", "", ""],
+        ["DMG", "D8", "20100315", "M"],
+        ["EQ", "30"]
+    ]
+
+
+@pytest.fixture
+def sample_270_serialization_segments():
+    """Sample 270 segments for serialization test."""
+    return [
+        ["ST", "270", "0001"],
+        ["BHT", "0022", "13", "INQUIRY123", "20240326", "1430", "EH"],
+        ["HL", "1", "", "20", "1"],
+        ["NM1", "PR", "2", "SAMPLE INSURANCE COMPANY", "", "", "", "", "PI", "66783"],
+        ["HL", "3", "2", "22", "0"],
+        ["NM1", "IL", "1", "DOE", "JANE", "M", "", "", "MI", "MEMBER123"],
+        ["EQ", "30", "IND", "HLT"]
+    ]
+
+
+@pytest.fixture
+def sample_271_serialization_segments():
+    """Sample 271 segments for serialization test."""
+    return [
+        ["ST", "271", "0002"],
+        ["BHT", "0022", "11", "INQUIRY123", "20240326", "1500", "RT"],
+        ["HL", "3", "2", "22", "0"],
+        ["NM1", "IL", "1", "DOE", "JANE", "M", "", "", "MI", "MEMBER123"],
+        ["EB", "1", "IND", "30", "HEALTH", "", "1", "100.00", "80.5", "", "", "Y", "Y"],
+        ["MSG", "BENEFITS AVAILABLE"]
+    ]
+
+
+@pytest.fixture
+def malformed_segments():
+    """Malformed segments for error handling tests."""
+    return [
+        ["ST"],  # Missing elements
+        ["NM1", "PR"],  # Incomplete NM1 segment
+        ["EB", "1"]  # Incomplete EB segment
+    ]
+
+
+@pytest.fixture
+def empty_segments():
+    """Empty segments list for testing empty input."""
+    return []
+
+
+@pytest.fixture
+def schema_270_path():
+    """Schema path for 270 transactions."""
+    return "packages/core/schemas/x12/270.json"
+
+
+@pytest.fixture
+def schema_271_path():
+    """Schema path for 271 transactions."""
+    return "packages/core/schemas/x12/271.json"
+
+
 class TestParser270:
     """Test cases for 270/271 parser functionality."""
 
-    def test_basic_270_parsing(self):
+    def test_basic_270_parsing(self, sample_270_segments):
         """Test basic 270 inquiry parsing functionality."""
-        # Sample 270 segments
-        segments = [
-            ["ST", "270", "0001"],
-            ["BHT", "0022", "13", "INQUIRY123", "20240326", "1430", "EH"],
-            ["HL", "1", "", "20", "1"],
-            ["NM1", "PR", "2", "SAMPLE INSURANCE COMPANY", "", "", "", "", "PI", "66783"],
-            ["HL", "2", "1", "21", "1"],
-            ["NM1", "1P", "2", "SAMPLE MEDICAL CLINIC", "", "", "", "", "XX", "1234567890"],
-            ["HL", "3", "2", "22", "0"],
-            ["NM1", "IL", "1", "DOE", "JANE", "M", "", "", "MI", "MEMBER123"],
-            ["DMG", "D8", "19850215", "F"],
-            ["EQ", "30"]
-        ]
-        
-        parser = Parser270(segments)
+        parser = Parser270(sample_270_segments)
         transaction = parser.parse()
         
         # Verify transaction structure
@@ -61,25 +165,9 @@ class TestParser270:
         assert len(transaction.eligibility_inquiries) == 1
         assert transaction.eligibility_inquiries[0].service_type_code == "30"
 
-    def test_basic_271_parsing(self):
+    def test_basic_271_parsing(self, sample_271_segments):
         """Test basic 271 response parsing functionality."""
-        # Sample 271 segments
-        segments = [
-            ["ST", "271", "0002"],
-            ["BHT", "0022", "11", "INQUIRY123", "20240326", "1500", "RT"],
-            ["HL", "1", "", "20", "1"],
-            ["NM1", "PR", "2", "SAMPLE INSURANCE COMPANY", "", "", "", "", "PI", "66783"],
-            ["HL", "2", "1", "21", "1"],
-            ["NM1", "1P", "2", "SAMPLE MEDICAL CLINIC", "", "", "", "", "XX", "1234567890"],
-            ["HL", "3", "2", "22", "0"],
-            ["NM1", "IL", "1", "DOE", "JANE", "M", "", "", "MI", "MEMBER123"],
-            ["DMG", "D8", "19850215", "F"],
-            ["EB", "1", "IND", "30", "", "", "1", "100.00", "", "", "", "Y", "Y"],
-            ["EB", "B", "IND", "1", "", "", "1", "25.00", "", "", "", "Y", "Y"],
-            ["MSG", "MEMBER IS ELIGIBLE FOR BENEFITS"]
-        ]
-        
-        parser = Parser270(segments)
+        parser = Parser270(sample_271_segments)
         transaction = parser.parse()
         
         # Verify transaction structure
@@ -111,12 +199,9 @@ class TestParser270:
         assert len(transaction.messages) == 1
         assert transaction.messages[0].message_text == "MEMBER IS ELIGIBLE FOR BENEFITS"
 
-    def test_270_integration_with_main_parser(self):
+    def test_270_integration_with_main_parser(self, sample_270_edi, schema_270_path):
         """Test 270 parsing through main EdiParser."""
-        sample_270 = """ISA*00*          *00*          *ZZ*123456789      *ZZ*987654321      *240326*1430*^*00501*000000001*1*T*:~GS*HS*123456789*987654321*20240326*1430*1*X*005010X279A1~ST*270*0001~BHT*0022*13*INQUIRY123*20240326*1430*EH~HL*1**20*1~NM1*PR*2*SAMPLE INSURANCE COMPANY*****PI*66783~HL*2*1*21*1~NM1*1P*2*SAMPLE MEDICAL CLINIC*****XX*1234567890~HL*3*2*22*0~NM1*IL*1*DOE*JANE*M***MI*MEMBER123~EQ*30~SE*11*0001~GE*1*1~IEA*1*000000001~"""
-        
-        schema_path = "packages/core/schemas/x12/270.json"
-        parser = EdiParser(sample_270, schema_path)
+        parser = EdiParser(sample_270_edi, schema_270_path)
         root = parser.parse()
         
         # Verify structure
@@ -141,12 +226,9 @@ class TestParser270:
         assert healthcare_tx.subscriber is not None
         assert healthcare_tx.subscriber.member_id == "MEMBER123"
 
-    def test_271_integration_with_main_parser(self):
+    def test_271_integration_with_main_parser(self, sample_271_edi, schema_271_path):
         """Test 271 parsing through main EdiParser."""
-        sample_271 = """ISA*00*          *00*          *ZZ*987654321      *ZZ*123456789      *240326*1500*^*00501*000000002*1*T*:~GS*HB*987654321*123456789*20240326*1500*2*X*005010X279A1~ST*271*0002~BHT*0022*11*INQUIRY123*20240326*1500*RT~HL*1**20*1~NM1*PR*2*SAMPLE INSURANCE COMPANY*****PI*66783~HL*2*1*21*1~NM1*1P*2*SAMPLE MEDICAL CLINIC*****XX*1234567890~HL*3*2*22*0~NM1*IL*1*DOE*JANE*M***MI*MEMBER123~EB*1*IND*30***1*100.00***Y*Y~MSG*MEMBER IS ELIGIBLE FOR BENEFITS~SE*13*0002~GE*1*2~IEA*1*000000002~"""
-        
-        schema_path = "packages/core/schemas/x12/271.json"
-        parser = EdiParser(sample_271, schema_path)
+        parser = EdiParser(sample_271_edi, schema_271_path)
         root = parser.parse()
         
         # Verify structure
@@ -173,20 +255,9 @@ class TestParser270:
         assert len(healthcare_tx.eligibility_benefits) == 1
         assert len(healthcare_tx.messages) == 1
 
-    def test_270_dependent_parsing(self):
+    def test_270_dependent_parsing(self, sample_270_dependent_segments):
         """Test parsing of dependent information in 270."""
-        segments = [
-            ["ST", "270", "0001"],
-            ["BHT", "0022", "13", "INQUIRY123", "20240326", "1430", "EH"],
-            ["HL", "3", "2", "22", "1"],  # Subscriber with child
-            ["NM1", "IL", "1", "DOE", "JANE", "M", "", "", "MI", "MEMBER123"],
-            ["HL", "4", "3", "23", "0"],  # Dependent
-            ["NM1", "03", "1", "DOE", "JOHN", "", "", "", "", ""],
-            ["DMG", "D8", "20100315", "M"],
-            ["EQ", "30"]
-        ]
-        
-        parser = Parser270(segments)
+        parser = Parser270(sample_270_dependent_segments)
         transaction = parser.parse()
         
         assert transaction.subscriber is not None
@@ -198,19 +269,9 @@ class TestParser270:
         assert transaction.dependent.date_of_birth == "20100315"
         assert transaction.dependent.gender == "M"
 
-    def test_270_to_dict_serialization(self):
+    def test_270_to_dict_serialization(self, sample_270_serialization_segments):
         """Test JSON serialization of 270 transaction."""
-        segments = [
-            ["ST", "270", "0001"],
-            ["BHT", "0022", "13", "INQUIRY123", "20240326", "1430", "EH"],
-            ["HL", "1", "", "20", "1"],
-            ["NM1", "PR", "2", "SAMPLE INSURANCE COMPANY", "", "", "", "", "PI", "66783"],
-            ["HL", "3", "2", "22", "0"],
-            ["NM1", "IL", "1", "DOE", "JANE", "M", "", "", "MI", "MEMBER123"],
-            ["EQ", "30", "IND", "HLT"]
-        ]
-        
-        parser = Parser270(segments)
+        parser = Parser270(sample_270_serialization_segments)
         transaction = parser.parse()
         
         # Test serialization
@@ -232,18 +293,9 @@ class TestParser270:
         assert data["eligibility_inquiries"][0]["coverage_level_code"] == "IND"
         assert data["eligibility_inquiries"][0]["insurance_type_code"] == "HLT"
 
-    def test_271_to_dict_serialization(self):
+    def test_271_to_dict_serialization(self, sample_271_serialization_segments):
         """Test JSON serialization of 271 transaction."""
-        segments = [
-            ["ST", "271", "0002"],
-            ["BHT", "0022", "11", "INQUIRY123", "20240326", "1500", "RT"],
-            ["HL", "3", "2", "22", "0"],
-            ["NM1", "IL", "1", "DOE", "JANE", "M", "", "", "MI", "MEMBER123"],
-            ["EB", "1", "IND", "30", "HEALTH", "", "1", "100.00", "80.5", "", "", "Y", "Y"],
-            ["MSG", "BENEFITS AVAILABLE"]
-        ]
-        
-        parser = Parser270(segments)
+        parser = Parser270(sample_271_serialization_segments)
         transaction = parser.parse()
         
         # Test serialization
@@ -273,9 +325,9 @@ class TestParser270:
         assert len(data["messages"]) == 1
         assert data["messages"][0]["message_text"] == "BENEFITS AVAILABLE"
 
-    def test_empty_segments(self):
+    def test_empty_segments(self, empty_segments):
         """Test parser behavior with empty segments."""
-        parser = Parser270([])
+        parser = Parser270(empty_segments)
         transaction = parser.parse()
         
         assert isinstance(transaction, Transaction270)
@@ -283,15 +335,9 @@ class TestParser270:
         assert transaction.information_source is None
         assert transaction.subscriber is None
 
-    def test_malformed_segments(self):
+    def test_malformed_segments(self, malformed_segments):
         """Test parser behavior with malformed segments."""
-        segments = [
-            ["ST"],  # Missing elements
-            ["NM1", "PR"],  # Incomplete NM1 segment
-            ["EB", "1"]  # Incomplete EB segment
-        ]
-        
-        parser = Parser270(segments)
+        parser = Parser270(malformed_segments)
         transaction = parser.parse()
         
         # Should not crash, but data will be minimal

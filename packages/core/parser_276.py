@@ -7,6 +7,7 @@ and Response transactions, building the AST structures defined in ast_276.py.
 
 from typing import Dict, List, Any, Optional
 import logging
+from .base_parser import BaseParser
 from .ast_276 import (
     Transaction276, Transaction277, InformationSourceInfo276, InformationReceiverInfo276,
     ProviderInfo276, SubscriberInfo276, PatientInfo276, ClaimStatusInquiry,
@@ -16,7 +17,7 @@ from .ast_276 import (
 logger = logging.getLogger(__name__)
 
 
-class Parser276:
+class Parser276(BaseParser):
     """Parser for EDI 276/277 Claim Status Inquiry/Response transactions."""
     
     def __init__(self, segments: List[List[str]]):
@@ -26,8 +27,7 @@ class Parser276:
         Args:
             segments: List of EDI segments, each segment is a list of elements
         """
-        self.segments = segments
-        self.current_index = 0
+        super().__init__(segments)
         self.transaction_type = None
         
     def parse(self):
@@ -36,22 +36,42 @@ class Parser276:
         
         Returns:
             Transaction276 or Transaction277: Parsed transaction object
+            
+        Raises:
+            ValueError: If unable to parse the transaction
         """
-        # Determine transaction type from ST segment
-        st_segment = self._find_segment("ST")
-        if st_segment and len(st_segment) > 1:
-            self.transaction_type = st_segment[1]
-        
-        if self.transaction_type == "276":
-            return self._parse_276()
-        elif self.transaction_type == "277":
-            return self._parse_277()
-        else:
-            # Default to 276 if unknown
-            return self._parse_276()
+        try:
+            # Determine transaction type from ST segment
+            st_segment = self._find_segment("ST")
+            if st_segment and len(st_segment) > 1:
+                self.transaction_type = st_segment[1]
+            
+            logger.debug(f"Parsing {self.transaction_type or 'unknown'} transaction")
+            
+            if self.transaction_type == "276":
+                return self._parse_276()
+            elif self.transaction_type == "277":
+                return self._parse_277()
+            else:
+                # Default to 276 if unknown
+                logger.warning(f"Unknown transaction type {self.transaction_type}, defaulting to 276")
+                return self._parse_276()
+        except Exception as e:
+            logger.error(f"Error parsing 276/277 transaction: {e}")
+            # Return minimal transaction instead of failing
+            return Transaction276(header={})
+    
+    def get_transaction_codes(self) -> List[str]:
+        """Get the transaction codes this parser supports."""
+        return ["276", "277"]
     
     def _parse_276(self) -> Transaction276:
-        """Parse 276 Claim Status Inquiry transaction."""
+        """
+        Parse 276 Claim Status Inquiry transaction.
+        
+        Returns:
+            Transaction276: Parsed claim status inquiry transaction
+        """
         transaction = Transaction276(header={})
         
         # Parse header information
@@ -60,10 +80,16 @@ class Parser276:
         # Parse hierarchical loops
         self._parse_hierarchical_loops_276(transaction)
         
+        logger.debug(f"Parsed 276 transaction with {len(transaction.claim_inquiries)} inquiries")
         return transaction
     
     def _parse_277(self) -> Transaction277:
-        """Parse 277 Claim Status Response transaction."""
+        """
+        Parse 277 Claim Status Response transaction.
+        
+        Returns:
+            Transaction277: Parsed claim status response transaction
+        """
         transaction = Transaction277(header={})
         
         # Parse header information
@@ -72,6 +98,7 @@ class Parser276:
         # Parse hierarchical loops
         self._parse_hierarchical_loops_277(transaction)
         
+        logger.debug(f"Parsed 277 transaction with {len(transaction.claim_status_info)} status records")
         return transaction
     
     def _parse_header(self, transaction):

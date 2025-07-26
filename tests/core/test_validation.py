@@ -12,45 +12,40 @@ from packages.core.parser import EdiParser
 from packages.core.emitter import EdiEmitter
 
 
-class TestValidationEngine:
-    """Test the validation engine functionality."""
+@pytest.fixture
+def validation_engine():
+    """Basic validation engine instance."""
+    return ValidationEngine()
 
-    def test_validation_engine_initialization(self):
-        """Test validation engine can be initialized."""
-        engine = ValidationEngine()
-        assert len(engine.rules) == 0
-        assert len(engine.rule_sets) == 0
 
-    def test_add_rule(self):
-        """Test adding validation rules."""
-        engine = ValidationEngine()
-        rule = FieldValidationRule(
-            "TEST_RULE", "Test rule", ValidationSeverity.ERROR, 
-            ValidationCategory.BUSINESS, "test.field", lambda x: x is not None
+@pytest.fixture
+def sample_field_validation_rule():
+    """Sample field validation rule for testing."""
+    return FieldValidationRule(
+        "TEST_RULE", "Test rule", ValidationSeverity.ERROR, 
+        ValidationCategory.BUSINESS, "test.field", lambda x: x is not None
+    )
+
+
+@pytest.fixture
+def sample_rule_set():
+    """Sample rule set for testing."""
+    return [
+        FieldValidationRule(
+            "TEST_RULE1", "Test rule 1", ValidationSeverity.ERROR,
+            ValidationCategory.BUSINESS, "test.field1", lambda x: x is not None
+        ),
+        FieldValidationRule(
+            "TEST_RULE2", "Test rule 2", ValidationSeverity.WARNING,
+            ValidationCategory.FORMAT, "test.field2", lambda x: len(str(x)) > 0
         )
-        engine.add_rule(rule)
-        assert len(engine.rules) == 1
+    ]
 
-    def test_add_rule_set(self):
-        """Test adding named rule sets."""
-        engine = ValidationEngine()
-        rules = [
-            FieldValidationRule(
-                "TEST_RULE1", "Test rule 1", ValidationSeverity.ERROR,
-                ValidationCategory.BUSINESS, "test.field1", lambda x: x is not None
-            ),
-            FieldValidationRule(
-                "TEST_RULE2", "Test rule 2", ValidationSeverity.WARNING,
-                ValidationCategory.FORMAT, "test.field2", lambda x: len(str(x)) > 0
-            )
-        ]
-        engine.add_rule_set("test_set", rules)
-        assert "test_set" in engine.rule_sets
-        assert len(engine.rule_sets["test_set"]) == 2
 
-    def test_load_rules_from_yaml(self):
-        """Test loading validation rules from YAML file."""
-        yaml_content = """
+@pytest.fixture
+def sample_yaml_rules():
+    """Sample YAML validation rules content."""
+    return """
 rules:
   - id: "TEST_REQUIRED"
     type: "field"
@@ -68,15 +63,115 @@ rules:
     severity: "warning"
     category: "format"
 """
+
+
+@pytest.fixture
+def sample_edi_835():
+    """Sample 835 EDI content."""
+    with open('tests/fixtures/835.edi', 'r') as f:
+        return f.read()
+
+
+@pytest.fixture
+def parsed_835_root(sample_edi_835):
+    """Parsed 835 EDI root object."""
+    parser = EdiParser(
+        edi_string=sample_edi_835,
+        schema_path='packages/core/schemas/x12/835.json'
+    )
+    return parser.parse()
+
+
+@pytest.fixture
+def invalid_835_edi():
+    """Invalid 835 EDI content for testing error conditions."""
+    return """ISA*00*          *00*          *ZZ*TEST*ZZ*TEST*230101*0000*U*00501*1*0*P*:~
+GS*HP*TEST*TEST*20230101*0000*1*X*005010X221A1~
+ST*835*0001~
+BPR*I*-100*C*CHK*20230101~
+CLP*TEST*1*100*150*0*12*CTRL~
+SE*5*0001~
+GE*1*1~
+IEA*1*1~"""
+
+
+@pytest.fixture
+def parsed_invalid_835_root(invalid_835_edi):
+    """Parsed invalid 835 EDI root object."""
+    parser = EdiParser(
+        edi_string=invalid_835_edi,
+        schema_path='packages/core/schemas/x12/835.json'
+    )
+    return parser.parse()
+
+
+@pytest.fixture
+def validation_engine_with_835_rules(validation_engine):
+    """Validation engine pre-loaded with 835 business rules."""
+    for rule in get_835_business_rules():
+        validation_engine.add_rule(rule)
+    return validation_engine
+
+
+@pytest.fixture
+def test_obj_valid():
+    """Valid test object for validation."""
+    class TestObj:
+        name = "Valid Name"
+        valid = True
+        existing_field = "value"
+    return TestObj()
+
+
+@pytest.fixture
+def test_obj_invalid():
+    """Invalid test object for validation."""
+    class TestObjInvalid:
+        name = ""
+        valid = False
+    return TestObjInvalid()
+
+
+@pytest.fixture
+def sample_validation_error():
+    """Sample validation error for testing."""
+    return ValidationError(
+        code="TEST_ERROR",
+        message="Test error message",
+        severity=ValidationSeverity.ERROR,
+        category=ValidationCategory.BUSINESS
+    )
+
+
+class TestValidationEngine:
+    """Test the validation engine functionality."""
+
+    def test_validation_engine_initialization(self, validation_engine):
+        """Test validation engine can be initialized."""
+        assert len(validation_engine.rules) == 0
+        assert len(validation_engine.rule_sets) == 0
+
+    def test_add_rule(self, validation_engine, sample_field_validation_rule):
+        """Test adding validation rules."""
+        validation_engine.add_rule(sample_field_validation_rule)
+        assert len(validation_engine.rules) == 1
+
+    def test_add_rule_set(self, validation_engine, sample_rule_set):
+        """Test adding named rule sets."""
+        validation_engine.add_rule_set("test_set", sample_rule_set)
+        assert "test_set" in validation_engine.rule_sets
+        assert len(validation_engine.rule_sets["test_set"]) == 2
+
+    def test_load_rules_from_yaml(self, validation_engine, sample_yaml_rules):
+        """Test loading validation rules from YAML file."""
         with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as f:
-            f.write(yaml_content)
+            f.write(sample_yaml_rules)
             yaml_path = f.name
         
         try:
-            engine = ValidationEngine()
-            loaded_count = engine.load_rules_from_yaml(yaml_path)
+            loaded_count = validation_engine.load_rules_from_yaml(yaml_path)
             assert loaded_count == 2
-            assert len(engine.rules) == 2
+            assert len(validation_engine.rules) == 2
         finally:
             os.unlink(yaml_path)
 
@@ -84,7 +179,7 @@ rules:
 class TestValidationRules:
     """Test individual validation rules."""
 
-    def test_field_validation_rule_required(self):
+    def test_field_validation_rule_required(self, test_obj_valid, test_obj_invalid):
         """Test required field validation rule."""
         rule = FieldValidationRule(
             "REQ_TEST", "Required field test", ValidationSeverity.ERROR,
@@ -92,21 +187,15 @@ class TestValidationRules:
         )
         
         # Test with valid data
-        class TestObj:
-            name = "Valid Name"
-        
-        errors = rule.validate(TestObj())
+        errors = rule.validate(test_obj_valid)
         assert len(errors) == 0
         
         # Test with invalid data
-        class TestObjEmpty:
-            name = ""
-        
-        errors = rule.validate(TestObjEmpty())
+        errors = rule.validate(test_obj_invalid)
         assert len(errors) == 1
         assert errors[0].code == "REQ_TEST"
 
-    def test_business_rule_validation(self):
+    def test_business_rule_validation(self, test_obj_valid, test_obj_invalid):
         """Test business rule validation."""
         def test_condition(edi_root, context):
             return hasattr(edi_root, 'valid') and edi_root.valid
@@ -117,17 +206,11 @@ class TestValidationRules:
         )
         
         # Test with valid data
-        class TestObj:
-            valid = True
-        
-        errors = rule.validate(TestObj())
+        errors = rule.validate(test_obj_valid)
         assert len(errors) == 0
         
         # Test with invalid data
-        class TestObjInvalid:
-            valid = False
-        
-        errors = rule.validate(TestObjInvalid())
+        errors = rule.validate(test_obj_invalid)
         assert len(errors) == 1
         assert errors[0].code == "BIZ_TEST"
 
@@ -181,14 +264,6 @@ class TestBuiltInValidators:
 class Test835BusinessRules:
     """Test 835-specific business rules."""
 
-    def setup_method(self):
-        """Set up test data."""
-        self.parser = EdiParser(
-            edi_string=open('tests/fixtures/835.edi').read(),
-            schema_path='packages/core/schemas/x12/835.json'
-        )
-        self.edi_root = self.parser.parse()
-
     def test_835_business_rules_loading(self):
         """Test that 835 business rules can be loaded."""
         rules = get_835_business_rules()
@@ -198,59 +273,53 @@ class Test835BusinessRules:
         for rule in rules:
             assert isinstance(rule, ValidationRule)
 
-    def test_835_validation_with_valid_data(self):
+    def test_835_validation_with_valid_data(self, validation_engine_with_835_rules, parsed_835_root):
         """Test 835 validation with valid data."""
-        engine = ValidationEngine()
-        for rule in get_835_business_rules():
-            engine.add_rule(rule)
-        
-        result = engine.validate(self.edi_root)
+        result = validation_engine_with_835_rules.validate(parsed_835_root)
         
         # Should have some rules applied
         assert result.rules_applied > 0
 
-    def test_835_validation_with_rule_sets(self):
+    def test_835_validation_with_rule_sets(self, validation_engine):
         """Test 835 validation using predefined rule sets."""
-        engine = ValidationEngine()
-        
         # Load basic rules
         basic_rules_path = Path("packages/validation-rules/835-basic.yml")
         if basic_rules_path.exists():
-            loaded_count = engine.load_rules_from_yaml(str(basic_rules_path))
+            loaded_count = validation_engine.load_rules_from_yaml(str(basic_rules_path))
             assert loaded_count > 0
         
         # Load HIPAA rules
         hipaa_rules_path = Path("packages/validation-rules/hipaa-basic.yml")
         if hipaa_rules_path.exists():
-            loaded_count = engine.load_rules_from_yaml(str(hipaa_rules_path))
+            loaded_count = validation_engine.load_rules_from_yaml(str(hipaa_rules_path))
             assert loaded_count > 0
 
-    def test_financial_consistency_validation(self):
+    def test_financial_consistency_validation(self, parsed_835_root):
         """Test financial consistency validation."""
         from packages.core.validators_835 import Financial835ValidationRule
         
         rule = Financial835ValidationRule()
-        errors = rule.validate(self.edi_root)
+        errors = rule.validate(parsed_835_root)
         
         # Should not have errors for our test data
         assert isinstance(errors, list)
 
-    def test_claim_validation(self):
+    def test_claim_validation(self, parsed_835_root):
         """Test claim validation."""
         from packages.core.validators_835 import Claim835ValidationRule
         
         rule = Claim835ValidationRule()
-        errors = rule.validate(self.edi_root)
+        errors = rule.validate(parsed_835_root)
         
         # Should not have errors for our test data
         assert isinstance(errors, list)
 
-    def test_date_validation(self):
+    def test_date_validation(self, parsed_835_root):
         """Test date validation."""
         from packages.core.validators_835 import Date835ValidationRule
         
         rule = Date835ValidationRule()
-        errors = rule.validate(self.edi_root)
+        errors = rule.validate(parsed_835_root)
         
         # Should not have errors for our test data
         assert isinstance(errors, list)
@@ -259,22 +328,10 @@ class Test835BusinessRules:
 class TestValidationIntegration:
     """Test validation integration with parsing and CLI."""
 
-    def test_validation_with_parsing(self):
+    def test_validation_with_parsing(self, validation_engine_with_835_rules, parsed_835_root):
         """Test validation integrated with parsing."""
-        # Parse a valid EDI file
-        parser = EdiParser(
-            edi_string=open('tests/fixtures/835.edi').read(),
-            schema_path='packages/core/schemas/x12/835.json'
-        )
-        edi_root = parser.parse()
-        
-        # Set up validation
-        engine = ValidationEngine()
-        for rule in get_835_business_rules():
-            engine.add_rule(rule)
-        
         # Run validation
-        result = engine.validate(edi_root)
+        result = validation_engine_with_835_rules.validate(parsed_835_root)
         
         # Check results
         assert isinstance(result.is_valid, bool)
@@ -282,51 +339,24 @@ class TestValidationIntegration:
         assert isinstance(result.warnings, list)
         assert result.rules_applied > 0
 
-    def test_validation_with_invalid_data(self):
+    def test_validation_with_invalid_data(self, validation_engine_with_835_rules, parsed_invalid_835_root):
         """Test validation with intentionally invalid data."""
-        # Create EDI with invalid financial data
-        invalid_edi = """ISA*00*          *00*          *ZZ*TEST*ZZ*TEST*230101*0000*U*00501*1*0*P*:~
-GS*HP*TEST*TEST*20230101*0000*1*X*005010X221A1~
-ST*835*0001~
-BPR*I*-100*C*CHK*20230101~
-CLP*TEST*1*100*150*0*12*CTRL~
-SE*5*0001~
-GE*1*1~
-IEA*1*1~"""
-        
-        parser = EdiParser(
-            edi_string=invalid_edi,
-            schema_path='packages/core/schemas/x12/835.json'
-        )
-        edi_root = parser.parse()
-        
-        # Set up validation
-        engine = ValidationEngine()
-        for rule in get_835_business_rules():
-            engine.add_rule(rule)
-        
         # Run validation
-        result = engine.validate(edi_root)
+        result = validation_engine_with_835_rules.validate(parsed_invalid_835_root)
         
         # Should have validation errors due to negative amount and inconsistent claim data
         assert len(result.errors) > 0 or len(result.warnings) > 0
 
-    def test_validation_error_details(self):
+    def test_validation_error_details(self, validation_engine, test_obj_valid):
         """Test that validation errors contain proper details."""
-        engine = ValidationEngine()
-        
         # Add a test rule that will fail
         rule = FieldValidationRule(
             "TEST_FAIL", "Test failure", ValidationSeverity.ERROR,
             ValidationCategory.BUSINESS, "nonexistent.field", lambda x: False
         )
-        engine.add_rule(rule)
+        validation_engine.add_rule(rule)
         
-        # Create test object
-        class TestObj:
-            existing_field = "value"
-        
-        result = engine.validate(TestObj())
+        result = validation_engine.validate(test_obj_valid)
         
         # Should have applied the rule
         assert result.rules_applied == 1
@@ -345,20 +375,12 @@ class TestValidationResults:
         assert len(result.warnings) == 0
         assert len(result.info) == 0
 
-    def test_validation_result_add_error(self):
+    def test_validation_result_add_error(self, sample_validation_error):
         """Test adding errors to validation result."""
         from packages.core.validation import ValidationResult
         
         result = ValidationResult(is_valid=True)
-        
-        error = ValidationError(
-            code="TEST_ERROR",
-            message="Test error message",
-            severity=ValidationSeverity.ERROR,
-            category=ValidationCategory.BUSINESS
-        )
-        
-        result.add_error(error)
+        result.add_error(sample_validation_error)
         
         assert result.is_valid == False
         assert len(result.errors) == 1

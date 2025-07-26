@@ -7,6 +7,7 @@ transactions, building the AST structures defined in ast_837p.py.
 
 from typing import Dict, List, Any, Optional
 import logging
+from .base_parser import BaseParser
 from .ast_837p import (
     Transaction837P, SubmitterInfo, ReceiverInfo, BillingProviderInfo,
     SubscriberInfo, PatientInfo, ClaimInfo837P, ServiceLine837P,
@@ -16,7 +17,7 @@ from .ast_837p import (
 logger = logging.getLogger(__name__)
 
 
-class Parser837P:
+class Parser837P(BaseParser):
     """Parser for EDI 837P Professional Claims transactions."""
     
     def __init__(self, segments: List[List[str]]):
@@ -26,8 +27,7 @@ class Parser837P:
         Args:
             segments: List of EDI segments, each segment is a list of elements
         """
-        self.segments = segments
-        self.current_index = 0
+        super().__init__(segments)
         self.transaction = None
         
     def parse(self) -> Transaction837P:
@@ -36,16 +36,31 @@ class Parser837P:
         
         Returns:
             Transaction837P: Parsed transaction object
+            
+        Raises:
+            ValueError: If unable to parse the transaction
         """
-        self.transaction = Transaction837P(header={})
-        
-        # Parse header information
-        self._parse_header()
-        
-        # Parse hierarchical loops
-        self._parse_hierarchical_loops()
-        
-        return self.transaction
+        try:
+            self.transaction = Transaction837P(header={})
+            
+            logger.debug("Parsing 837P professional claims transaction")
+            
+            # Parse header information
+            self._parse_header()
+            
+            # Parse hierarchical loops
+            self._parse_hierarchical_loops()
+            
+            logger.debug(f"Parsed 837P transaction with {len(self.transaction.service_lines)} service lines")
+            return self.transaction
+        except Exception as e:
+            logger.error(f"Error parsing 837P transaction: {e}")
+            # Return minimal transaction instead of failing
+            return Transaction837P(header={})
+    
+    def get_transaction_codes(self) -> List[str]:
+        """Get the transaction codes this parser supports."""
+        return ["837"]
     
     def _parse_header(self):
         """Parse transaction header information."""
@@ -350,16 +365,6 @@ class Parser837P:
         
         return address if address else None
     
-    def _find_segment(self, segment_id: str) -> Optional[List[str]]:
-        """Find the first segment with the given ID."""
-        for segment in self.segments:
-            if segment and segment[0] == segment_id:
-                return segment
-        return None
-    
-    def _find_all_segments(self, segment_id: str) -> List[List[str]]:
-        """Find all segments with the given ID."""
-        return [segment for segment in self.segments if segment and segment[0] == segment_id]
     
     def _find_next_segment(self, segment_id: str, after_segment: List[str]) -> Optional[List[str]]:
         """Find the next segment with the given ID after the specified segment."""

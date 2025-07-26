@@ -6,15 +6,16 @@ Electronic Remittance Advice transactions.
 """
 
 from typing import List, Dict, Any, Optional
+from dataclasses import dataclass
 from .ast import Node
 
 
+@dataclass
 class FinancialInformation(Node):
     """Financial information from BPR segment."""
-    def __init__(self, total_paid: int, payment_method: str, payment_date: str):
-        self.total_paid = total_paid
-        self.payment_method = payment_method
-        self.payment_date = payment_date
+    total_paid: int
+    payment_method: str
+    payment_date: str
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -24,36 +25,42 @@ class FinancialInformation(Node):
         }
 
 
+@dataclass
 class Payer(Node):
     """Payer information from N1 segment."""
-    def __init__(self, name: str):
-        self.name = name
+    name: str
 
     def to_dict(self) -> Dict[str, Any]:
         return {"name": self.name}
 
 
+@dataclass
 class Payee(Node):
     """Payee information from N1 segment."""
-    def __init__(self, name: str, npi: str):
-        self.name = name
-        self.npi = npi
+    name: str
+    npi: str
 
     def to_dict(self) -> Dict[str, Any]:
         return {"name": self.name, "npi": self.npi}
 
 
+@dataclass
 class Claim(Node):
     """Claim information from CLP segment."""
-    def __init__(self, claim_id: str, status_code: int, total_charge: float, total_paid: float, patient_responsibility: float, payer_control_number: str):
-        self.claim_id = claim_id
-        self.status_code = status_code
-        self.total_charge = total_charge
-        self.total_paid = total_paid
-        self.patient_responsibility = patient_responsibility
-        self.payer_control_number = payer_control_number
-        self.adjustments: List[Adjustment] = []
-        self.services: List[Service] = []
+    claim_id: str
+    status_code: int
+    total_charge: float
+    total_paid: float
+    patient_responsibility: float
+    payer_control_number: str
+    adjustments: List['Adjustment'] = None
+    services: List['Service'] = None
+    
+    def __post_init__(self):
+        if self.adjustments is None:
+            self.adjustments = []
+        if self.services is None:
+            self.services = []
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -68,13 +75,13 @@ class Claim(Node):
         }
 
 
+@dataclass
 class Adjustment(Node):
     """Adjustment information from CAS segment."""
-    def __init__(self, group_code: str, reason_code: str, amount: float, quantity: int):
-        self.group_code = group_code
-        self.reason_code = reason_code
-        self.amount = amount
-        self.quantity = quantity
+    group_code: str
+    reason_code: str
+    amount: float
+    quantity: int
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -85,14 +92,14 @@ class Adjustment(Node):
         }
 
 
+@dataclass
 class Service(Node):
     """Service information from SVC segment."""
-    def __init__(self, service_code: str, charge_amount: float, paid_amount: float, revenue_code: str, service_date: str):
-        self.service_code = service_code
-        self.charge_amount = charge_amount
-        self.paid_amount = paid_amount
-        self.revenue_code = revenue_code
-        self.service_date = service_date
+    service_code: str
+    charge_amount: float
+    paid_amount: float
+    revenue_code: str
+    service_date: str
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -104,19 +111,24 @@ class Service(Node):
         }
 
 
+@dataclass
 class Transaction835(Node):
     """835 Electronic Remittance Advice Transaction."""
-    def __init__(self, transaction_set_code: str, control_number: str):
-        self.header = {
-            "transaction_set_code": transaction_set_code,
-            "control_number": control_number,
-        }
-        self.financial_information: Optional[FinancialInformation] = None
-        self.reference_numbers: List[Dict[str, str]] = []
-        self.dates: List[Dict[str, str]] = []
-        self.payer: Optional[Payer] = None
-        self.payee: Optional[Payee] = None
-        self.claims: List[Claim] = []
+    header: Dict[str, str]
+    financial_information: Optional[FinancialInformation] = None
+    reference_numbers: List[Dict[str, str]] = None
+    dates: List[Dict[str, str]] = None
+    payer: Optional[Payer] = None
+    payee: Optional[Payee] = None
+    claims: List[Claim] = None
+    
+    def __post_init__(self):
+        if self.reference_numbers is None:
+            self.reference_numbers = []
+        if self.dates is None:
+            self.dates = []
+        if self.claims is None:
+            self.claims = []
 
     def to_dict(self) -> Dict[str, Any]:
         data = {"header": self.header}
