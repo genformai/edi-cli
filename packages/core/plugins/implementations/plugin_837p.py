@@ -3,9 +3,9 @@ EDI 837P (Professional Claims) Transaction Parser Plugin
 """
 
 from typing import List, Type, Optional
-from ..plugin_api import TransactionParserPlugin
-from ..ast import EdiRoot, Interchange, FunctionalGroup, Transaction
-from ..ast_837p import Transaction837P
+from ..api import TransactionParserPlugin
+from ...base.edi_ast import EdiRoot, Interchange, FunctionalGroup, Transaction
+from ...transactions.t837p.ast import Transaction837P
 from ..parser_837p import Parser837P
 
 
@@ -32,7 +32,7 @@ class Plugin837P(TransactionParserPlugin):
     
     def parse(self, segments: List[List[str]]) -> EdiRoot:
         """Parse 837P Professional Claims transaction using existing parser."""
-        from ..ast import Interchange, FunctionalGroup, Transaction
+        from ...base.edi_ast import Interchange, FunctionalGroup, Transaction
         
         parser = Parser837P(segments)
         transaction_obj = parser.parse()

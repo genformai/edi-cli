@@ -3,9 +3,9 @@ EDI 270/271 (Eligibility Inquiry/Response) Transaction Parser Plugin
 """
 
 from typing import List, Type, Optional
-from ..plugin_api import TransactionParserPlugin
-from ..ast import EdiRoot
-from ..ast_270 import Transaction270, Transaction271
+from ..api import TransactionParserPlugin
+from ...base.edi_ast import EdiRoot
+from ...transactions.t270.ast import Transaction270, Transaction271
 from ..parser_270 import Parser270
 
 
@@ -33,7 +33,7 @@ class Plugin270271(TransactionParserPlugin):
     
     def parse(self, segments: List[List[str]]) -> EdiRoot:
         """Parse 270/271 Eligibility transactions using existing parser."""
-        from ..ast import Interchange, FunctionalGroup, Transaction
+        from ...base.edi_ast import Interchange, FunctionalGroup, Transaction
         
         parser = Parser270(segments)
         transaction_obj = parser.parse()

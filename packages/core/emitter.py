@@ -1,5 +1,5 @@
 import json
-from .ast import EdiRoot
+from .base.edi_ast import EdiRoot
 
 def convert_floats_to_ints(obj):
     """Recursively convert float values that are whole numbers to integers."""

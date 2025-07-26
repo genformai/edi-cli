@@ -3,9 +3,9 @@ EDI 276/277 (Claim Status Inquiry/Response) Transaction Parser Plugin
 """
 
 from typing import List, Type, Optional
-from ..plugin_api import TransactionParserPlugin
-from ..ast import EdiRoot
-from ..ast_276 import Transaction276, Transaction277
+from ..api import TransactionParserPlugin
+from ...base.edi_ast import EdiRoot
+from ...transactions.t276.ast import Transaction276, Transaction277
 from ..parser_276 import Parser276
 
 
@@ -33,7 +33,7 @@ class Plugin276277(TransactionParserPlugin):
     
     def parse(self, segments: List[List[str]]) -> EdiRoot:
         """Parse 276/277 Claim Status transactions using existing parser."""
-        from ..ast import Interchange, FunctionalGroup, Transaction
+        from ...base.edi_ast import Interchange, FunctionalGroup, Transaction
         
         parser = Parser276(segments)
         transaction_obj = parser.parse()
