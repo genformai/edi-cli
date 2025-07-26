@@ -1,0 +1,38 @@
+[tool.poetry]
+name = "edi-cli"
+version = "0.1.0"
+description = "A modern, open-source EDI toolkit."
+authors = ["Your Name <you@example.com>"]
+license = "MIT"
+packages = [{include = "packages"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+typer = "^0.9.0"
+fastapi = "^0.104.1"
+uvicorn = {extras = ["standard"], version = "^0.24.0.post1"}
+lark = "^1.1.8"
+pydantic = "^2.5.2"
+rich = "^13.7.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.3"
+hypothesis = "^6.88.4"
+ruff = "^0.1.6"
+black = "^23.11.0"
+mypy = "^1.7.0"
+mkdocs = "^1.5.3"
+mkdocs-material = "^9.4.14"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 88
+
+[tool.black]
+line-length = 88
+
+[tool.mypy]
+strict = true

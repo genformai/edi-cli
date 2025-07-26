@@ -1,0 +1,149 @@
+{
+  "schema": {
+    "delimiters": {
+      "segment": "~",
+      "element": "*",
+      "sub_element": ":"
+    },
+    "segments": {
+      "ISA": {
+        "name": "Interchange Control Header",
+        "elements": [
+          { "name": "AuthorizationInformationQualifier", "type": "string" },
+          { "name": "AuthorizationInformation", "type": "string" },
+          { "name": "SecurityInformationQualifier", "type": "string" },
+          { "name": "SecurityInformation", "type": "string" },
+          { "name": "InterchangeIdQualifier", "type": "string" },
+          { "name": "InterchangeSenderId", "type": "string" },
+          { "name": "InterchangeIdQualifier", "type": "string" },
+          { "name": "InterchangeReceiverId", "type": "string" },
+          { "name": "InterchangeDate", "type": "date" },
+          { "name": "InterchangeTime", "type": "time" },
+          { "name": "RepetitionSeparator", "type": "string" },
+          { "name": "InterchangeControlVersionNumber", "type": "string" },
+          { "name": "InterchangeControlNumber", "type": "string" },
+          { "name": "AcknowledgementRequested", "type": "string" },
+          { "name": "InterchangeUsageIndicator", "type": "string" },
+          { "name": "ComponentElementSeparator", "type": "string" }
+        ]
+      },
+      "IEA": {
+        "name": "Interchange Control Trailer",
+        "elements": [
+          { "name": "NumberOfIncludedFunctionalGroups", "type": "integer" },
+          { "name": "InterchangeControlNumber", "type": "string" }
+        ]
+      },
+      "GS": {
+        "name": "Functional Group Header",
+        "elements": [
+          { "name": "FunctionalIdentifierCode", "type": "string" },
+          { "name": "ApplicationSenderCode", "type": "string" },
+          { "name": "ApplicationReceiverCode", "type": "string" },
+          { "name": "Date", "type": "date" },
+          { "name": "Time", "type": "time" },
+          { "name": "GroupControlNumber", "type": "string" },
+          { "name": "ResponsibleAgencyCode", "type": "string" },
+          { "name": "VersionReleaseIndustryIdentifierCode", "type": "string" }
+        ]
+      },
+      "GE": {
+        "name": "Functional Group Trailer",
+        "elements": [
+          { "name": "NumberOfTransactionSetsIncluded", "type": "integer" },
+          { "name": "GroupControlNumber", "type": "string" }
+        ]
+      },
+      "ST": {
+        "name": "Transaction Set Header",
+        "elements": [
+          { "name": "TransactionSetIdentifierCode", "type": "string" },
+          { "name": "TransactionSetControlNumber", "type": "string" }
+        ]
+      },
+      "SE": {
+        "name": "Transaction Set Trailer",
+        "elements": [
+          { "name": "NumberOfIncludedSegments", "type": "integer" },
+          { "name": "TransactionSetControlNumber", "type": "string" }
+        ]
+      },
+      "BPR": {
+        "name": "Beginning Segment for Payment Order/Remittance Advice",
+        "elements": [
+          { "name": "TransactionHandlingCode", "type": "string" },
+          { "name": "MonetaryAmount", "type": "number" },
+          { "name": "CreditDebitFlagCode", "type": "string" },
+          { "name": "PaymentMethodCode", "type": "string" },
+          { "name": "PaymentFormatCode", "type": "string" },
+          { "name": "DFIIDNumberQualifier", "type": "string" },
+          { "name": "DFIIdentificationNumber", "type": "string" },
+          { "name": "AccountNumberQualifier", "type": "string" },
+          { "name": "AccountNumber", "type": "string" },
+          { "name": "OriginatingCompanyIdentifier", "type": "string" },
+          { "name": "OriginatingCompanySupplementalCode", "type": "string" },
+          { "name": "DFIIDNumberQualifier", "type": "string" },
+          { "name": "DFIIdentificationNumber", "type": "string" },
+          { "name": "AccountNumberQualifier", "type": "string" },
+          { "name": "AccountNumber", "type": "string" },
+          { "name": "Date", "type": "date" }
+        ]
+      },
+      "TRN": {
+        "name": "Reassociation Trace Number",
+        "elements": [
+          { "name": "TraceTypeCode", "type": "string" },
+          { "name": "ReferenceIdentification", "type": "string" },
+          { "name": "OriginatingCompanyIdentifier", "type": "string" },
+          { "name": "ReferenceIdentification", "type": "string" }
+        ]
+      },
+      "DTM": {
+        "name": "Date/Time Reference",
+        "elements": [
+          { "name": "DateTimeQualifier", "type": "string" },
+          { "name": "Date", "type": "date" }
+        ]
+      },
+      "N1": {
+        "name": "Name",
+        "elements": [
+          { "name": "EntityIdentifierCode", "type": "string" },
+          { "name": "Name", "type": "string" },
+          { "name": "IdentificationCodeQualifier", "type": "string" },
+          { "name": "IdentificationCode", "type": "string" }
+        ]
+      },
+      "CLP": {
+        "name": "Claim Payment Information",
+        "elements": [
+          { "name": "ClaimSubmitterIdentifier", "type": "string" },
+          { "name": "ClaimStatusCode", "type": "integer" },
+          { "name": "TotalClaimChargeAmount", "type": "number" },
+          { "name": "ClaimPaymentAmount", "type": "number" },
+          { "name": "PatientResponsibilityAmount", "type": "number" },
+          { "name": "ClaimFilingIndicatorCode", "type": "string" },
+          { "name": "PayerClaimControlNumber", "type": "string" }
+        ]
+      },
+      "CAS": {
+        "name": "Claims Adjustment",
+        "elements": [
+          { "name": "ClaimAdjustmentGroupCode", "type": "string" },
+          { "name": "ClaimAdjustmentReasonCode", "type": "string" },
+          { "name": "MonetaryAmount", "type": "number" },
+          { "name": "Quantity", "type": "number" }
+        ]
+      },
+      "SVC": {
+        "name": "Service Payment Information",
+        "elements": [
+          { "name": "CompositeMedicalProcedureIdentifier", "type": "string" },
+          { "name": "LineItemChargeAmount", "type": "number" },
+          { "name": "LineItemProviderPaymentAmount", "type": "number" },
+          { "name": "NationalUniformBillingCommitteeRevenueCode", "type": "string" }
+        ]
+      }
+    }
+  }
+}
