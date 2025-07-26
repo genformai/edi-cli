@@ -5,9 +5,6 @@ from .ast import (
     Interchange,
     FunctionalGroup,
     Transaction,
-)
-from .ast_835 import (
-    Transaction835,
     FinancialInformation,
     Payer,
     Payee,
@@ -144,7 +141,7 @@ class EdiParser:
             control_number=transaction_837p.header.get("transaction_set_control_number", "")
         )
         
-        # Store the 837P transaction in the healthcare_transaction field
+        # Store the 837P transaction in the generic transaction
         transaction.healthcare_transaction = transaction_837p
         
         functional_group.transactions.append(transaction)
@@ -211,7 +208,7 @@ class EdiParser:
             control_number=healthcare_transaction.header.get("transaction_set_control_number", "")
         )
         
-        # Store the 270/271 transaction in the healthcare_transaction field
+        # Store the 270/271 transaction in the generic transaction
         transaction.healthcare_transaction = healthcare_transaction
         
         functional_group.transactions.append(transaction)
@@ -278,7 +275,7 @@ class EdiParser:
             control_number=healthcare_transaction.header.get("transaction_set_control_number", "")
         )
         
-        # Store the 276/277 transaction in the healthcare_transaction field
+        # Store the 276/277 transaction in the generic transaction
         transaction.healthcare_transaction = healthcare_transaction
         
         functional_group.transactions.append(transaction)
@@ -294,7 +291,6 @@ class EdiParser:
         interchange: Interchange = None
         functional_group: FunctionalGroup = None
         transaction: Transaction = None
-        transaction_835: Transaction835 = None
         claim: Claim = None
 
         for segment in segments:
@@ -322,50 +318,42 @@ class EdiParser:
                 if interchange:
                     interchange.functional_groups.append(functional_group)
             elif segment_id == "ST":
-                # Create both generic transaction and 835-specific transaction
                 transaction = Transaction(
                     transaction_set_code=elements[0],
                     control_number=elements[1],
                 )
-                transaction_835 = Transaction835(
-                    transaction_set_code=elements[0],
-                    control_number=elements[1],
-                )
-                # Link the 835 transaction to the generic transaction
-                transaction.financial_transaction = transaction_835
-                
                 if functional_group:
                     functional_group.transactions.append(transaction)
             elif segment_id == "BPR":
-                if transaction_835:
-                    transaction_835.financial_information = FinancialInformation(
+                if transaction:
+                    transaction.financial_information = FinancialInformation(
                         total_paid=int(float(elements[1])),
                         payment_method=elements[3],
                         payment_date=_format_ccyymmdd(elements[4]),
                     )
             elif segment_id == "TRN":
-                if transaction_835:
-                    transaction_835.reference_numbers.append(
+                if transaction:
+                    transaction.reference_numbers.append(
                         {"type": "trace_number", "value": elements[1]}
                     )
             elif segment_id == "DTM":
-                if transaction_835:
+                if transaction:
                     if len(elements) > 1:
                         if elements[0] == "405":
-                            transaction_835.dates.append(
+                            transaction.dates.append(
                                 {"type": "production_date", "date": _format_ccyymmdd(elements[1])}
                             )
                         elif elements[0] == "484" and claim:
                             claim.services[-1].service_date = _format_ccyymmdd(elements[1])
 
             elif segment_id == "N1":
-                if transaction_835:
+                if transaction:
                     if elements[0] == "PR":
-                        transaction_835.payer = Payer(name=elements[1])
+                        transaction.payer = Payer(name=elements[1])
                     elif elements[0] == "PE":
-                        transaction_835.payee = Payee(name=elements[1], npi=elements[3])
+                        transaction.payee = Payee(name=elements[1], npi=elements[3])
             elif segment_id == "CLP":
-                if transaction_835:
+                if transaction:
                     claim = Claim(
                         claim_id=elements[0],
                         status_code=int(elements[1]),
@@ -374,7 +362,7 @@ class EdiParser:
                         patient_responsibility=float(elements[4]),
                         payer_control_number=elements[6],
                     )
-                    transaction_835.claims.append(claim)
+                    transaction.claims.append(claim)
             elif segment_id == "CAS":
                 if claim:
                     adjustment = Adjustment(

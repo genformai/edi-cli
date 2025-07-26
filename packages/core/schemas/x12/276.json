@@ -1,0 +1,103 @@
+{
+  "name": "x12-276-5010",
+  "version": "5010",
+  "description": "X12 276 Claim Status Inquiry Schema",
+  "transaction_set": "276",
+  "schema": {
+    "delimiters": {
+      "segment": "~",
+      "element": "*",
+      "sub_element": ":",
+      "repetition": "^"
+    },
+    "segments": {
+      "ISA": {
+        "name": "Interchange Control Header",
+        "elements": [
+          {"name": "authorization_information_qualifier", "type": "string", "length": 2},
+          {"name": "authorization_information", "type": "string", "length": 10},
+          {"name": "security_information_qualifier", "type": "string", "length": 2},
+          {"name": "security_information", "type": "string", "length": 10},
+          {"name": "interchange_id_qualifier", "type": "string", "length": 2},
+          {"name": "interchange_sender_id", "type": "string", "length": 15},
+          {"name": "interchange_id_qualifier", "type": "string", "length": 2},
+          {"name": "interchange_receiver_id", "type": "string", "length": 15},
+          {"name": "interchange_date", "type": "string", "length": 6},
+          {"name": "interchange_time", "type": "string", "length": 4},
+          {"name": "repetition_separator", "type": "string", "length": 1},
+          {"name": "interchange_control_version_number", "type": "string", "length": 5},
+          {"name": "interchange_control_number", "type": "string", "length": 9},
+          {"name": "acknowledgment_requested", "type": "string", "length": 1},
+          {"name": "usage_indicator", "type": "string", "length": 1},
+          {"name": "component_element_separator", "type": "string", "length": 1}
+        ]
+      },
+      "BHT": {
+        "name": "Beginning of Hierarchical Transaction",
+        "elements": [
+          {"name": "hierarchical_structure_code", "type": "string", "length": 4},
+          {"name": "transaction_set_purpose_code", "type": "string", "length": 2},
+          {"name": "reference_identification", "type": "string", "length": 50},
+          {"name": "date", "type": "string", "length": 8},
+          {"name": "time", "type": "string", "length": 8},
+          {"name": "transaction_type_code", "type": "string", "length": 2}
+        ]
+      },
+      "HL": {
+        "name": "Hierarchical Level",
+        "elements": [
+          {"name": "hierarchical_id_number", "type": "string", "length": 12},
+          {"name": "hierarchical_parent_id_number", "type": "string", "length": 12},
+          {"name": "hierarchical_level_code", "type": "string", "length": 2},
+          {"name": "hierarchical_child_code", "type": "string", "length": 1}
+        ]
+      },
+      "NM1": {
+        "name": "Individual or Organizational Name",
+        "elements": [
+          {"name": "entity_identifier_code", "type": "string", "length": 3},
+          {"name": "entity_type_qualifier", "type": "string", "length": 1},
+          {"name": "name_last_or_organization_name", "type": "string", "length": 60},
+          {"name": "name_first", "type": "string", "length": 35},
+          {"name": "name_middle", "type": "string", "length": 25},
+          {"name": "name_prefix", "type": "string", "length": 10},
+          {"name": "name_suffix", "type": "string", "length": 10},
+          {"name": "identification_code_qualifier", "type": "string", "length": 2},
+          {"name": "identification_code", "type": "string", "length": 80}
+        ]
+      },
+      "TRN": {
+        "name": "Trace",
+        "elements": [
+          {"name": "trace_type_code", "type": "string", "length": 1},
+          {"name": "reference_identification", "type": "string", "length": 50},
+          {"name": "originating_company_identifier", "type": "string", "length": 10},
+          {"name": "reference_identification", "type": "string", "length": 50}
+        ]
+      },
+      "AMT": {
+        "name": "Monetary Amount",
+        "elements": [
+          {"name": "amount_qualifier_code", "type": "string", "length": 3},
+          {"name": "monetary_amount", "type": "string", "length": 18}
+        ]
+      },
+      "DTP": {
+        "name": "Date or Time or Period",
+        "elements": [
+          {"name": "date_time_qualifier", "type": "string", "length": 3},
+          {"name": "date_time_period_format_qualifier", "type": "string", "length": 3},
+          {"name": "date_time_period", "type": "string", "length": 35}
+        ]
+      },
+      "DMG": {
+        "name": "Demographic Information",
+        "elements": [
+          {"name": "date_time_period_format_qualifier", "type": "string", "length": 3},
+          {"name": "date_time_period", "type": "string", "length": 35},
+          {"name": "gender_code", "type": "string", "length": 1}
+        ]
+      }
+    }
+  }
+}
