@@ -15,7 +15,7 @@ from dataclasses import dataclass
 import logging
 from ...base.parser import BaseParser
 from ...base.enhanced_parser import EnhancedParser
-from ...errors import StandardErrorHandler, EDISegmentError, create_parse_context
+from ...errors import ErrorHandler, EDISegmentError, create_parse_context
 from ...base.edi_ast import EdiRoot, Interchange, FunctionalGroup, Transaction
 from .ast import (
     Transaction835,
@@ -176,13 +176,13 @@ class ParserUtilities:
         return triplets
 
 
-class Parser835(BaseParser):
+class Parser835Refactored(BaseParser):
     """Refactored parser for EDI 835 Healthcare Claim Payment/Advice transactions."""
 
     def __init__(self, segments: List[List[str]] = None):
         """Initialize the parser with optional segments."""
         super().__init__(segments or [])
-        self.error_handler = StandardErrorHandler()
+        self.error_handler = ErrorHandler()
         self.utilities = ParserUtilities()
         
         # Segment dispatcher map
@@ -266,7 +266,7 @@ class Parser835(BaseParser):
                     )
                     error = EDISegmentError(f"Error processing {segment_id} segment: {e}", context)
                     state.errors.append(error)
-                    self.error_handler.handle_error(error)
+                    self.error_handler.add_error(error)
             
             # Perform final validation
             self._perform_balancing_checks(state)
@@ -573,9 +573,8 @@ class Parser835(BaseParser):
         charge_amount = self._safe_float(self._get_element(segment, 2))
         paid_amount = self._safe_float(self._get_element(segment, 3))
         
-        # Parse composite service code (use ':' as default separator for service codes)
-        separator = ':' if ':' in service_code_raw else state.component_separator
-        service_code_parts = self.utilities.parse_composite(service_code_raw, separator)
+        # Parse composite service code
+        service_code_parts = self.utilities.parse_composite(service_code_raw, state.component_separator)
         
         service = Service(
             service_code=service_code_raw,

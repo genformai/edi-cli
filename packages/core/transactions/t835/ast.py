@@ -45,9 +45,10 @@ class Payee(Node):
     """Payee information from N1 segment."""
     name: str
     npi: str
+    tax_id: str = ""
 
     def to_dict(self) -> Dict[str, Any]:
-        return {"name": self.name, "npi": self.npi}
+        return {"name": self.name, "npi": self.npi, "tax_id": self.tax_id}
 
 
 @dataclass
@@ -103,7 +104,7 @@ class Adjustment(Node):
     group_code: str
     reason_code: str
     amount: float
-    quantity: float
+    quantity: Optional[float] = None  # Can be None if not present
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -122,15 +123,27 @@ class Service(Node):
     paid_amount: float
     revenue_code: str
     service_date: str
+    
+    # Additional fields for composite parsing
+    procedure_code: Optional[str] = None
+    modifier1: Optional[str] = None
+    modifier2: Optional[str] = None
 
     def to_dict(self) -> Dict[str, Any]:
-        return {
+        data = {
             "service_code": self.service_code,
             "charge_amount": self.charge_amount,
             "paid_amount": self.paid_amount,
             "revenue_code": self.revenue_code,
             "service_date": self.service_date,
         }
+        if self.procedure_code:
+            data["procedure_code"] = self.procedure_code
+        if self.modifier1:
+            data["modifier1"] = self.modifier1
+        if self.modifier2:
+            data["modifier2"] = self.modifier2
+        return data
 
 
 @dataclass
@@ -144,6 +157,12 @@ class Transaction835(Node):
     payee: Optional[Payee] = None
     claims: List[Claim] = None
     
+    # New fields for enhanced functionality
+    plb: List[Dict[str, Any]] = None  # Provider Level Adjustments
+    out_of_balance: bool = False
+    balance_delta: Optional[float] = None
+    segment_count_mismatch: bool = False
+    
     def __post_init__(self):
         if self.reference_numbers is None:
             self.reference_numbers = []
@@ -151,6 +170,8 @@ class Transaction835(Node):
             self.dates = []
         if self.claims is None:
             self.claims = []
+        if self.plb is None:
+            self.plb = []
 
     def to_dict(self) -> Dict[str, Any]:
         data = {"header": self.header}
@@ -166,4 +187,10 @@ class Transaction835(Node):
             data["payee"] = self.payee.to_dict()
         if self.claims:
             data["claims"] = [claim.to_dict() for claim in self.claims]
+        if self.plb:
+            data["plb"] = self.plb
+        data["out_of_balance"] = self.out_of_balance
+        if self.balance_delta is not None:
+            data["balance_delta"] = self.balance_delta
+        data["segment_count_mismatch"] = self.segment_count_mismatch
         return data
