@@ -13,6 +13,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 # Use new transaction-specific parsers
 from core.transactions.t835.parser import Parser835
+from core.transactions.t837p.parser import Parser837P
 from core.validation.engine import ValidationEngine
 from core.validation.yaml_loader import YamlValidationLoader
 
@@ -28,8 +29,11 @@ def parse_edi_content(edi_content: str, schema_name: str):
     if schema_name in ["x12-835-5010", "835"]:
         parser = Parser835(segments)
         return parser.parse()
+    elif schema_name in ["x12-837p-5010", "837p", "837"]:
+        parser = Parser837P(segments)
+        return parser.parse()
     else:
-        raise ValueError(f"Unsupported schema: {schema_name}. Currently supported: 835")
+        raise ValueError(f"Unsupported schema: {schema_name}. Currently supported: 835, 837p")
 
 def convert_command(input_file: str, output_format: str = "json", output_file: Optional[str] = None, schema: str = "x12-835-5010"):
     """Convert an EDI file to another format (JSON or CSV)."""
@@ -112,40 +116,53 @@ def validate_command(input_file: str, schema: str = "x12-835-5010", verbose: boo
                 return 1
         
         elif rule_set:
-            # Load predefined rule sets
+            # Load predefined rule sets based on schema
             rule_files = []
-            if rule_set == "basic":
-                rule_files = ["validation-rules/835-basic.yml"]
-            elif rule_set == "business":
-                rule_files = ["validation-rules/835-basic.yml", "validation-rules/835-business.yml"]
-            elif rule_set == "hipaa":
-                rule_files = ["validation-rules/835-basic.yml", "validation-rules/hipaa-835.yml"]
-            elif rule_set == "hipaa-advanced":
-                rule_files = ["validation-rules/835-basic.yml", "validation-rules/hipaa-835.yml", "validation-rules/hipaa-advanced.yml"]
-            elif rule_set == "enhanced-business":
-                # Use enhanced business rule engine instead of YAML rules
-                from core.validation.business_rule_plugin import BusinessRuleValidationPlugin, FieldLevelValidationPlugin
-                business_plugin = BusinessRuleValidationPlugin()
-                field_plugin = FieldLevelValidationPlugin()
-                engine.register_rule_plugin(business_plugin)
-                engine.register_rule_plugin(field_plugin)
-                rules_loaded += 2
-                print(f"📋 Loaded enhanced business rule engine with field-level validation")
-            elif rule_set == "all":
-                rule_files = ["validation-rules/835-basic.yml", "validation-rules/835-business.yml", "validation-rules/hipaa-835.yml"]
-            elif rule_set == "comprehensive":
-                # Load all YAML rules + enhanced business engine
-                rule_files = ["validation-rules/835-basic.yml", "validation-rules/835-business.yml", "validation-rules/hipaa-835.yml"]
-                from core.validation.business_rule_plugin import BusinessRuleValidationPlugin, FieldLevelValidationPlugin
-                business_plugin = BusinessRuleValidationPlugin()
-                field_plugin = FieldLevelValidationPlugin()
-                engine.register_rule_plugin(business_plugin)
-                engine.register_rule_plugin(field_plugin)
-                rules_loaded += 2
-                print(f"📋 Loaded enhanced business rule engine with field-level validation")
+            if schema in ["x12-837p-5010", "837p", "837"]:
+                # 837P Professional Claims rules
+                if rule_set == "basic":
+                    rule_files = ["validation-rules/837p-basic.yml"]
+                elif rule_set == "business":
+                    rule_files = ["validation-rules/837p-basic.yml"]
+                elif rule_set == "all":
+                    rule_files = ["validation-rules/837p-basic.yml"]
+                else:
+                    print(f"❌ Rule set '{rule_set}' not supported for 837P. Available: basic, business, all")
+                    return 1
             else:
-                print(f"❌ Unknown rule set: {rule_set}. Available: basic, business, hipaa, hipaa-advanced, enhanced-business, comprehensive, all")
-                return 1
+                # 835 Healthcare Claim Payment/Advice rules
+                if rule_set == "basic":
+                    rule_files = ["validation-rules/835-basic.yml"]
+                elif rule_set == "business":
+                    rule_files = ["validation-rules/835-basic.yml", "validation-rules/835-business.yml"]
+                elif rule_set == "hipaa":
+                    rule_files = ["validation-rules/835-basic.yml", "validation-rules/hipaa-835.yml"]
+                elif rule_set == "hipaa-advanced":
+                    rule_files = ["validation-rules/835-basic.yml", "validation-rules/hipaa-835.yml", "validation-rules/hipaa-advanced.yml"]
+                elif rule_set == "enhanced-business":
+                    # Use enhanced business rule engine instead of YAML rules
+                    from core.validation.business_rule_plugin import BusinessRuleValidationPlugin, FieldLevelValidationPlugin
+                    business_plugin = BusinessRuleValidationPlugin()
+                    field_plugin = FieldLevelValidationPlugin()
+                    engine.register_rule_plugin(business_plugin)
+                    engine.register_rule_plugin(field_plugin)
+                    rules_loaded += 2
+                    print(f"📋 Loaded enhanced business rule engine with field-level validation")
+                elif rule_set == "all":
+                    rule_files = ["validation-rules/835-basic.yml", "validation-rules/835-business.yml", "validation-rules/hipaa-835.yml"]
+                elif rule_set == "comprehensive":
+                    # Load all YAML rules + enhanced business engine
+                    rule_files = ["validation-rules/835-basic.yml", "validation-rules/835-business.yml", "validation-rules/hipaa-835.yml"]
+                    from core.validation.business_rule_plugin import BusinessRuleValidationPlugin, FieldLevelValidationPlugin
+                    business_plugin = BusinessRuleValidationPlugin()
+                    field_plugin = FieldLevelValidationPlugin()
+                    engine.register_rule_plugin(business_plugin)
+                    engine.register_rule_plugin(field_plugin)
+                    rules_loaded += 2
+                    print(f"📋 Loaded enhanced business rule engine with field-level validation")
+                else:
+                    print(f"❌ Unknown rule set: {rule_set}. Available: basic, business, hipaa, hipaa-advanced, enhanced-business, comprehensive, all")
+                    return 1
             
             loader = YamlValidationLoader()
             for rule_file in rule_files:
@@ -311,10 +328,10 @@ EDI CLI - A modern toolkit for working with EDI files
 Usage: edi <command> [arguments]
 
 Commands:
-  convert <input_file> [--to json] [--out output_file] [--schema x12-835-5010]
+  convert <input_file> [--to json] [--out output_file] [--schema x12-835-5010|x12-837p-5010]
     Convert an EDI file to another format (JSON)
     
-  validate <input_file> [--schema x12-835-5010] [--verbose] [--rules file.yml] [--rule-set basic|business|hipaa|hipaa-advanced|all]
+  validate <input_file> [--schema x12-835-5010|x12-837p-5010] [--verbose] [--rules file.yml] [--rule-set <rule_set>]
     Validate an EDI file against a schema with custom validation rules
     
   inspect <input_file> [--segments NM1,CLP]
@@ -324,19 +341,25 @@ Commands:
     Show this help message
 
 Examples:
-  edi convert sample.edi --to json
-  edi validate sample.edi --verbose
-  edi validate sample.edi --rule-set basic --verbose
-  edi validate sample.edi --rule-set hipaa --verbose
+  edi convert sample-835.edi --to json --schema 835
+  edi convert sample-837.edi --to json --schema 837p
+  edi validate sample-835.edi --rule-set basic --verbose
+  edi validate sample-837.edi --schema 837p --rule-set basic --verbose
+  edi validate sample-835.edi --rule-set hipaa --verbose
   edi validate sample.edi --rules custom-rules.yml
   edi inspect sample.edi --segments BPR,CLP
 
-Note: YAML validation DSL framework with HIPAA compliance available in v0.2.3.
-      Rule sets: basic, business, hipaa, hipaa-advanced, enhanced-business, comprehensive, all
+Supported Transaction Sets:
+  835: Healthcare Claim Payment/Advice (ERA)
+  837P: Professional Healthcare Claims
+
+Rule Sets by Transaction:
+  835: basic, business, hipaa, hipaa-advanced, enhanced-business, comprehensive, all
+  837P: basic, business, all
       
 Advanced validation options:
-  enhanced-business: Advanced business rule engine with field-level validation
-  comprehensive: All YAML rules + enhanced business engine (most thorough)
+  enhanced-business: Advanced business rule engine with field-level validation (835 only)
+  comprehensive: All YAML rules + enhanced business engine (835 only)
 """)
 
 def main():

@@ -1,0 +1,176 @@
+# Basic validation rules for EDI 837P Healthcare Professional Claims
+# These rules validate fundamental structure and required fields
+
+rules:
+  - name: "require_submitter_info"
+    description: "Submitter information must be present"
+    severity: "error"
+    transaction_types: ["837"]
+    category: "structural"
+    error_code: "837P_MISSING_SUBMITTER"
+    message: "Submitter information is required for 837P transactions"
+    conditions:
+      - field: "submitter"
+        operator: "not_exists"
+
+  - name: "require_receiver_info"
+    description: "Receiver information must be present"
+    severity: "error"
+    transaction_types: ["837"]
+    category: "structural"
+    error_code: "837P_MISSING_RECEIVER"
+    message: "Receiver information is required for 837P transactions"
+    conditions:
+      - field: "receiver"
+        operator: "not_exists"
+
+  - name: "require_billing_provider"
+    description: "Billing provider information must be present"
+    severity: "error"
+    transaction_types: ["837"]
+    category: "structural"
+    error_code: "837P_MISSING_BILLING_PROVIDER"
+    message: "Billing provider information is required for 837P transactions"
+    conditions:
+      - field: "billing_provider"
+        operator: "not_exists"
+
+  - name: "require_subscriber_info"
+    description: "Subscriber information must be present"
+    severity: "error"
+    transaction_types: ["837"]
+    category: "structural"
+    error_code: "837P_MISSING_SUBSCRIBER"
+    message: "Subscriber information is required for 837P transactions"
+    conditions:
+      - field: "subscriber"
+        operator: "not_exists"
+
+  - name: "require_claim_info"
+    description: "Claim information must be present"
+    severity: "error"
+    transaction_types: ["837"]
+    category: "structural"
+    error_code: "837P_MISSING_CLAIM"
+    message: "Claim information is required for 837P transactions"
+    conditions:
+      - field: "claim"
+        operator: "not_exists"
+
+  - name: "require_service_lines"
+    description: "At least one service line must be present"
+    severity: "error"
+    transaction_types: ["837"]
+    category: "structural"
+    error_code: "837P_NO_SERVICE_LINES"
+    message: "At least one service line is required for 837P claims"
+    conditions:
+      - field: "service_lines"
+        operator: "not_exists"
+
+  - name: "validate_claim_id"
+    description: "Claim ID must be present and non-empty"
+    severity: "error"
+    transaction_types: ["837"]
+    category: "data"
+    error_code: "837P_INVALID_CLAIM_ID"
+    message: "Claim ID must be present and non-empty"
+    conditions:
+      - field: "claim.claim_id"
+        operator: "eq"
+        value: ""
+
+  - name: "validate_total_charge"
+    description: "Total charge amount must be positive"
+    severity: "error"
+    transaction_types: ["837"]
+    category: "data"
+    error_code: "837P_INVALID_TOTAL_CHARGE"
+    message: "Total charge amount must be greater than zero"
+    conditions:
+      - field: "claim.total_charge"
+        operator: "lte"
+        value: 0
+
+  - name: "validate_billing_provider_npi"
+    description: "Billing provider should have valid NPI"
+    severity: "warning"
+    transaction_types: ["837"]
+    category: "data"
+    error_code: "837P_INVALID_BILLING_NPI"
+    message: "Billing provider should have a valid 10-digit NPI"
+    conditions:
+      - field: "billing_provider.npi"
+        operator: "not_matches"
+        value: "^\\d{10}$"
+
+  - name: "validate_service_line_charges"
+    description: "Service line charge amounts must be positive"
+    severity: "error"
+    transaction_types: ["837"]
+    category: "data"
+    error_code: "837P_INVALID_SERVICE_CHARGE"
+    message: "Service line charge amounts must be greater than zero"
+    conditions:
+      - field: "service_lines[0].charge_amount"
+        operator: "lte"
+        value: 0
+
+  - name: "validate_procedure_codes"
+    description: "Service lines must have valid procedure codes"
+    severity: "error"
+    transaction_types: ["837"]
+    category: "data"
+    error_code: "837P_MISSING_PROCEDURE_CODE"
+    message: "Service lines must have procedure codes"
+    conditions:
+      - field: "service_lines[0].procedure_code"
+        operator: "eq"
+        value: ""
+
+  - name: "validate_diagnoses_present"
+    description: "Claims should have at least one diagnosis"
+    severity: "warning"
+    transaction_types: ["837"]
+    category: "business"
+    error_code: "837P_NO_DIAGNOSES"
+    message: "Claims should include at least one diagnosis code"
+    conditions:
+      - field: "diagnoses"
+        operator: "not_exists"
+
+  - name: "validate_subscriber_name"
+    description: "Subscriber must have first and last name"
+    severity: "error"
+    transaction_types: ["837"]
+    category: "data"
+    error_code: "837P_INCOMPLETE_SUBSCRIBER_NAME"
+    message: "Subscriber must have both first and last name"
+    conditions:
+      - field: "subscriber.last_name"
+        operator: "eq"
+        value: ""
+
+  - name: "validate_place_of_service"
+    description: "Claims must have valid place of service code"
+    severity: "warning"
+    transaction_types: ["837"]
+    category: "data"
+    error_code: "837P_INVALID_PLACE_OF_SERVICE"
+    message: "Claims should have a valid place of service code"
+    conditions:
+      - field: "claim.place_of_service_code"
+        operator: "eq"
+        value: ""
+
+  - name: "validate_service_units"
+    description: "Service line units must be positive"
+    severity: "warning"
+    transaction_types: ["837"]
+    category: "data"
+    error_code: "837P_INVALID_SERVICE_UNITS"
+    message: "Service line units must be greater than zero"
+    conditions:
+      - field: "service_lines[0].units"
+        operator: "lte"
+        value: 0

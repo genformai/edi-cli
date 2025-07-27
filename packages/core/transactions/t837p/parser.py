@@ -8,6 +8,7 @@ transactions, building the AST structures defined in ast_837p.py.
 from typing import Dict, List, Any, Optional
 import logging
 from ...base.parser import BaseParser
+from ...base.edi_ast import EdiRoot, Interchange, FunctionalGroup, Transaction
 from .ast import (
     Transaction837P, SubmitterInfo, ReceiverInfo, BillingProviderInfo,
     SubscriberInfo, PatientInfo, ClaimInfo837P, ServiceLine837P,
@@ -30,12 +31,12 @@ class Parser837P(BaseParser):
         super().__init__(segments)
         self.transaction = None
         
-    def parse(self) -> Transaction837P:
+    def parse(self) -> EdiRoot:
         """
         Parse the 837P transaction from EDI segments.
         
         Returns:
-            Transaction837P: Parsed transaction object
+            EdiRoot: Parsed EDI document with 837P transaction
             
         Raises:
             ValueError: If unable to parse the transaction
@@ -52,11 +53,67 @@ class Parser837P(BaseParser):
             self._parse_hierarchical_loops()
             
             logger.debug(f"Parsed 837P transaction with {len(self.transaction.service_lines)} service lines")
-            return self.transaction
+            
+            # Wrap in EdiRoot structure for consistency with other parsers
+            transaction = Transaction(
+                transaction_set_code=self.transaction.header.get("transaction_set_identifier", "837"),
+                control_number=self.transaction.header.get("transaction_set_control_number", "0001"),
+                transaction_data=self.transaction
+            )
+            
+            functional_group = FunctionalGroup(
+                functional_group_code="HC",
+                sender_id="SENDER",
+                receiver_id="RECEIVER", 
+                date="20240101",
+                time="1200",
+                control_number="1"
+            )
+            functional_group.transactions = [transaction]
+            
+            interchange = Interchange(
+                sender_id="SENDER",
+                receiver_id="RECEIVER",
+                date="20240101", 
+                time="1200",
+                control_number="1"
+            )
+            interchange.functional_groups = [functional_group]
+            
+            root = EdiRoot()
+            root.interchanges = [interchange]
+            return root
+            
         except Exception as e:
             logger.error(f"Error parsing 837P transaction: {e}")
-            # Return minimal transaction instead of failing
-            return Transaction837P(header={})
+            # Return minimal structure instead of failing
+            transaction = Transaction(
+                transaction_set_code="837",
+                control_number="0001",
+                transaction_data=Transaction837P(header={})
+            )
+            functional_group = FunctionalGroup(
+                functional_group_code="HC",
+                sender_id="SENDER",
+                receiver_id="RECEIVER",
+                date="20240101",
+                time="1200", 
+                control_number="1"
+            )
+            functional_group.transactions = [transaction]
+            
+            interchange = Interchange(
+                sender_id="SENDER",
+                receiver_id="RECEIVER",
+                date="20240101",
+                time="1200",
+                control_number="1"
+            )
+            interchange.functional_groups = [functional_group]
+            
+            root = EdiRoot()
+            root.interchanges = [interchange]
+            return root
     
     def get_transaction_codes(self) -> List[str]:
         """Get the transaction codes this parser supports."""
@@ -86,6 +143,9 @@ class Parser837P(BaseParser):
     
     def _parse_hierarchical_loops(self):
         """Parse hierarchical loops (HL segments) and their associated data."""
+        # First, parse submitter and receiver info that appear before HL segments
+        self._parse_transaction_level_info()
+        
         hl_segments = self._find_all_segments("HL")
         
         for hl_segment in hl_segments:
@@ -95,18 +155,57 @@ class Parser837P(BaseParser):
             hierarchical_level_code = hl_segment[3]
             
             # Parse based on hierarchical level
-            if hierarchical_level_code == "20":  # Information Source (Submitter)
-                self._parse_submitter_info(hl_segment)
-            elif hierarchical_level_code == "21":  # Information Receiver (Receiver)  
-                self._parse_receiver_info(hl_segment)
-            elif hierarchical_level_code == "22":  # Billing Provider
+            if hierarchical_level_code == "20":  # Billing Provider (Information Source)
                 self._parse_billing_provider_info(hl_segment)
                 # Parse claim information after billing provider
                 self._parse_claim_info(hl_segment)
-            elif hierarchical_level_code == "23":  # Subscriber
+            elif hierarchical_level_code == "22":  # Subscriber
                 self._parse_subscriber_info(hl_segment)
-            elif hierarchical_level_code == "24":  # Patient (if different from subscriber)
+            elif hierarchical_level_code == "23":  # Patient (if different from subscriber)
                 self._parse_patient_info(hl_segment)
+    
+    def _parse_transaction_level_info(self):
+        """Parse submitter and receiver info that appear at transaction level."""
+        # Find submitter info (NM1*41) - appears early in transaction
+        nm1_segments = self._find_all_segments("NM1")
+        
+        for nm1_segment in nm1_segments:
+            if len(nm1_segment) > 1 and nm1_segment[1] == "41":  # Submitter
+                submitter = SubmitterInfo(
+                    name=nm1_segment[3] if len(nm1_segment) > 3 else "",
+                    entity_identifier_code=nm1_segment[1],
+                    id_code_qualifier=nm1_segment[8] if len(nm1_segment) > 8 else "46",
+                    id_code=nm1_segment[9] if len(nm1_segment) > 9 else ""
+                )
+                
+                # Look for contact information (PER segment after this NM1)
+                per_segment = self._find_next_segment("PER", after_segment=nm1_segment)
+                if per_segment:
+                    submitter.contact_name = per_segment[2] if len(per_segment) > 2 else None
+                    # Parse contact methods
+                    for i in range(3, len(per_segment), 2):
+                        if i + 1 < len(per_segment):
+                            method = per_segment[i]
+                            value = per_segment[i + 1]
+                            if method == "TE":  # Telephone
+                                submitter.contact_phone = value
+                            elif method == "EM":  # Email
+                                submitter.contact_email = value
+                
+                self.transaction.submitter = submitter
+                break
+        
+        # Find receiver info (NM1*40)
+        for nm1_segment in nm1_segments:
+            if len(nm1_segment) > 1 and nm1_segment[1] == "40":  # Receiver
+                receiver = ReceiverInfo(
+                    name=nm1_segment[3] if len(nm1_segment) > 3 else "",
+                    entity_identifier_code=nm1_segment[1],
+                    id_code_qualifier=nm1_segment[8] if len(nm1_segment) > 8 else "46",
+                    id_code=nm1_segment[9] if len(nm1_segment) > 9 else ""
+                )
+                self.transaction.receiver = receiver
+                break
     
     def _parse_submitter_info(self, hl_segment: List[str]):
         """Parse submitter information."""
