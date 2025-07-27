@@ -1,8 +1,15 @@
 """
-Generic EDI AST Definitions
+Generic EDI AST Definitions - Unified Transaction Design
 
-This module defines the generic Abstract Syntax Tree nodes for EDI documents,
-independent of specific transaction types.
+This module defines a simplified, unified Abstract Syntax Tree for EDI documents.
+The new design uses a single transaction_data field instead of multiple type-specific
+containers, making it more extensible and maintainable.
+
+Key changes:
+- Removed healthcare_transaction, financial_transaction, logistics_transaction fields
+- Added single transaction_data field to hold any transaction-specific AST
+- Maintains backward compatibility for 835 transactions through special handling
+- Supports arbitrary transaction types without code changes to the base Transaction class
 """
 
 from typing import List, Dict, Any, Optional
@@ -64,29 +71,29 @@ class FunctionalGroup(Node):
 
 class Transaction(Node):
     """Generic EDI Transaction (ST/SE envelope)."""
-    def __init__(self, transaction_set_code: str, control_number: str):
+    def __init__(self, transaction_set_code: str, control_number: str, transaction_data: Any = None):
         self.header = {
             "transaction_set_code": transaction_set_code,
             "control_number": control_number,
         }
-        # Generic container for specific transaction data
-        self.healthcare_transaction: Optional[Any] = None  # For 837P, 270/271, 276/277
-        self.financial_transaction: Optional[Any] = None   # For 835 ERA
-        self.logistics_transaction: Optional[Any] = None   # For future 850, 856, etc.
+        # Single unified container for transaction-specific data
+        self.transaction_data: Optional[Any] = transaction_data
 
     def to_dict(self) -> Dict[str, Any]:
         data = {"header": self.header}
         
-        if self.healthcare_transaction:
-            data["healthcare_transaction"] = self.healthcare_transaction.to_dict()
-        if self.financial_transaction:
-            # For backward compatibility, flatten 835 fields directly into transaction
-            financial_data = self.financial_transaction.to_dict()
-            # Remove the nested header since it's redundant
-            if "header" in financial_data:
-                del financial_data["header"]
-            data.update(financial_data)
-        if self.logistics_transaction:
-            data["logistics_transaction"] = self.logistics_transaction.to_dict()
+        if self.transaction_data:
+            # Handle backward compatibility for different transaction types
+            transaction_dict = self.transaction_data.to_dict()
+            
+            # For 835 transactions, maintain backward compatibility by flattening
+            if hasattr(self.transaction_data, '__class__') and self.transaction_data.__class__.__name__ == 'Transaction835':
+                # Remove nested header to avoid duplication
+                if "header" in transaction_dict:
+                    del transaction_dict["header"]
+                data.update(transaction_dict)
+            else:
+                # For other transaction types, store under transaction_data key
+                data["transaction_data"] = transaction_dict
             
         return data

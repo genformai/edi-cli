@@ -150,18 +150,26 @@ class PluginManager:
     
     def load_builtin_plugins(self):
         """Load all built-in transaction parser plugins."""
-        from .plugins.plugin_835 import Plugin835
-        from .plugins.plugin_837p import Plugin837P
-        from .plugins.plugin_270_271 import Plugin270271
-        from .plugins.plugin_276_277 import Plugin276277
+        from .implementations.plugin_835 import Plugin835
+        from .implementations.plugin_837p import Plugin837P
+        from .implementations.plugin_270_271 import Plugin270271
+        from .implementations.plugin_276_277 import Plugin276277
         
         # Register built-in parsers
-        self.registry.register_transaction_parser(Plugin835())
-        self.registry.register_transaction_parser(Plugin837P())
-        self.registry.register_transaction_parser(Plugin270271())
-        self.registry.register_transaction_parser(Plugin276277())
+        plugins = [
+            Plugin835(),
+            Plugin837P(), 
+            Plugin270271(),
+            Plugin276277()
+        ]
         
-        print("Loaded all built-in transaction parser plugins")
+        for plugin in plugins:
+            try:
+                self.registry.register_transaction_parser(plugin)
+            except Exception as e:
+                print(f"Failed to register plugin {plugin.plugin_name}: {e}")
+        
+        print(f"Loaded {len(plugins)} built-in transaction parser plugins")
     
     def load_plugin_from_module(self, module_path: str, class_name: str):
         """Dynamically load a plugin from a module path."""

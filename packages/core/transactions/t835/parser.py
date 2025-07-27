@@ -77,19 +77,19 @@ class Parser835(BaseParser):
                     current_interchange.functional_groups.append(current_functional_group)
                 
                 elif segment_id == "ST" and current_functional_group:
-                    current_transaction = Transaction(
-                        transaction_set_code=self._get_element(segment, 1),
-                        control_number=self._get_element(segment, 2),
-                    )
-                    current_functional_group.transactions.append(current_transaction)
-                    
                     current_transaction_835 = Transaction835(
                         header={
                             "transaction_set_identifier": self._get_element(segment, 1),
                             "transaction_set_control_number": self._get_element(segment, 2),
                         }
                     )
-                    current_transaction.financial_transaction = current_transaction_835
+                    
+                    current_transaction = Transaction(
+                        transaction_set_code=self._get_element(segment, 1),
+                        control_number=self._get_element(segment, 2),
+                        transaction_data=current_transaction_835
+                    )
+                    current_functional_group.transactions.append(current_transaction)
                 
                 elif segment_id == "BPR" and current_transaction_835:
                     total_paid = self._safe_float(self._get_element(segment, 2))
@@ -112,7 +112,8 @@ class Parser835(BaseParser):
                             "value": reference_value
                         })
                 
-                elif segment_id == "DTM" and current_transaction_835:
+                elif segment_id == "DTM" and current_transaction_835 and not current_claim:
+                    # Transaction-level dates (not service-level)
                     date_qualifier = self._get_element(segment, 1)
                     date_value = self._get_element(segment, 2)
                     if date_value:
@@ -178,10 +179,12 @@ class Parser835(BaseParser):
                     current_claim.services.append(service)
                 
                 elif segment_id == "DTM" and current_claim and current_claim.services:
+                    # Service-level dates
                     date_qualifier = self._get_element(segment, 1)
                     date_value = self._get_element(segment, 2)
-                    if date_qualifier == "472" and date_value:
-                        current_claim.services[-1].service_date = self._format_date_ccyymmdd(date_value)
+                    if date_qualifier in ["472", "484"] and date_value:  # 472=Service Date, 484=Date of Service
+                        formatted_date = self._format_date_ccyymmdd(date_value)
+                        current_claim.services[-1].service_date = formatted_date
             
             logger.debug(f"Parsed 835 transaction with {len(current_transaction_835.claims) if current_transaction_835 else 0} claims")
             return root

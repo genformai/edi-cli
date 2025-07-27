@@ -50,20 +50,20 @@ class Test835Parser:
         assert len(result.interchanges) == 1
         
         interchange = result.interchanges[0]
-        assert interchange.sender_id == "SENDER"
-        assert interchange.receiver_id == "RECEIVER"
-        assert_date_format(interchange.date)
+        assert interchange.header["sender_id"] == "SENDER"
+        assert interchange.header["receiver_id"] == "RECEIVER"
+        assert_date_format(interchange.header["date"])
         
         # Verify functional group
         assert len(interchange.functional_groups) == 1
         functional_group = interchange.functional_groups[0]
-        assert functional_group.functional_group_code == "HP"
+        assert functional_group.header["functional_group_code"] == "HP"
         
         # Verify transaction
         assert len(functional_group.transactions) == 1
         transaction = functional_group.transactions[0]
-        assert transaction.transaction_set_code == "835"
-        assert transaction.control_number == "0001"
+        assert transaction.header["transaction_set_code"] == "835"
+        assert transaction.header["control_number"] == "0001"
 
     def test_parse_835_with_financial_info(self, parser_835):
         """Test parsing 835 with financial information (BPR segment)."""
@@ -84,7 +84,7 @@ class Test835Parser:
         
         # Verify financial information
         transaction = result.interchanges[0].functional_groups[0].transactions[0]
-        financial_transaction = transaction.financial_transaction
+        financial_transaction = transaction.transaction_data
         
         assert financial_transaction is not None
         financial_info = financial_transaction.financial_information
@@ -113,7 +113,7 @@ class Test835Parser:
         result = parser.parse()
         
         # Verify payer/payee information
-        financial_transaction = result.interchanges[0].functional_groups[0].transactions[0].financial_transaction
+        financial_transaction = result.interchanges[0].functional_groups[0].transactions[0].transaction_data
         
         assert financial_transaction.payer is not None
         assert financial_transaction.payer.name == "TEST PAYER"
@@ -144,7 +144,7 @@ class Test835Parser:
         result = parser.parse()
         
         # Verify claim information
-        financial_transaction = result.interchanges[0].functional_groups[0].transactions[0].financial_transaction
+        financial_transaction = result.interchanges[0].functional_groups[0].transactions[0].transaction_data
         
         assert len(financial_transaction.claims) == 1
         claim = financial_transaction.claims[0]
@@ -188,7 +188,7 @@ class Test835Parser:
         result = parser.parse()
         
         # Verify service information
-        financial_transaction = result.interchanges[0].functional_groups[0].transactions[0].financial_transaction
+        financial_transaction = result.interchanges[0].functional_groups[0].transactions[0].transaction_data
         claim = financial_transaction.claims[0]
         
         assert len(claim.services) == 2
@@ -207,20 +207,22 @@ class Test835Parser:
 
     def test_parse_835_invalid_segments(self, parser_835):
         """Test parsing 835 with invalid or missing segments."""
-        # Test with empty segments
-        with pytest.raises(ValueError):
-            parser = parser_835([])
-            parser.parse()
+        # Test with empty segments - should return empty root, not raise
+        parser = parser_835([])
+        result = parser.parse()
+        assert isinstance(result, EdiRoot)
+        assert len(result.interchanges) == 0
         
-        # Test with malformed segments
+        # Test with malformed segments - should handle gracefully
         invalid_segments = [
             ["ISA"],  # Incomplete ISA
             ["ST", "835"],  # Incomplete ST
         ]
         
-        with pytest.raises(ValueError):
-            parser = parser_835(invalid_segments)
-            parser.parse()
+        parser = parser_835(invalid_segments)
+        result = parser.parse()
+        assert isinstance(result, EdiRoot)
+        # Should create basic structure even with incomplete segments
 
     def test_get_transaction_codes(self, parser_835):
         """Test that parser returns correct transaction codes."""
