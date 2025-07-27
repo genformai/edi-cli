@@ -73,7 +73,7 @@ class Test835Validation:
         
         # Add payer/payee
         transaction_835.payer = Payer(name="TEST PAYER")
-        transaction_835.payee = Payee(name="TEST PROVIDER", npi="1234567893")
+        transaction_835.payee = Payee(name="TEST PROVIDER", npi="1234567897")
         
         # Add sample claim
         claim = Claim(
@@ -104,8 +104,9 @@ class Test835Validation:
         )
         claim.adjustments = [adjustment]
         
+        # Set transaction_data to enable backward compatibility properties
         transaction_835.claims = [claim]
-        transaction.financial_transaction = transaction_835
+        transaction.transaction_data = transaction_835
         
         # Build hierarchy
         functional_group.transactions = [transaction]
@@ -124,7 +125,7 @@ class Test835Validation:
         
         # Test invalid financial consistency
         # Modify claim to have inconsistent totals
-        claim = sample_edi_root.interchanges[0].functional_groups[0].transactions[0].financial_transaction.claims[0]
+        claim = sample_edi_root.interchanges[0].functional_groups[0].transactions[0].claims[0]
         claim.total_paid = 300.00  # Should be 400.00 to match financial info
         
         result = rule.validate(sample_edi_root, {})
@@ -139,7 +140,7 @@ class Test835Validation:
         assert len(result) == 0  # No errors means validation passed
         
         # Test invalid claim - negative amounts
-        claim = sample_edi_root.interchanges[0].functional_groups[0].transactions[0].financial_transaction.claims[0]
+        claim = sample_edi_root.interchanges[0].functional_groups[0].transactions[0].claims[0]
         claim.total_charge = -100.00
         
         result = rule.validate(sample_edi_root, {})
@@ -161,7 +162,7 @@ class Test835Validation:
         assert len(result) == 0  # No errors means validation passed
         
         # Test invalid adjustment - invalid group code
-        adjustment = sample_edi_root.interchanges[0].functional_groups[0].transactions[0].financial_transaction.claims[0].adjustments[0]
+        adjustment = sample_edi_root.interchanges[0].functional_groups[0].transactions[0].claims[0].adjustments[0]
         adjustment.group_code = "INVALID"
         
         result = rule.validate(sample_edi_root, {})
@@ -183,7 +184,7 @@ class Test835Validation:
         assert len(result) == 0  # No errors means validation passed
         
         # Test invalid service - negative amounts
-        service = sample_edi_root.interchanges[0].functional_groups[0].transactions[0].financial_transaction.claims[0].services[0]
+        service = sample_edi_root.interchanges[0].functional_groups[0].transactions[0].claims[0].services[0]
         service.charge_amount = -100.00
         
         result = rule.validate(sample_edi_root, {})
@@ -206,7 +207,7 @@ class Test835Validation:
         
         # Test invalid date format
         interchange = sample_edi_root.interchanges[0]
-        interchange.date = "INVALID_DATE"
+        interchange.header['date'] = "INVALID_DATE"
         
         result = rule.validate(sample_edi_root, {})
         assert len(result) > 0  # Errors mean validation failed
@@ -220,15 +221,15 @@ class Test835Validation:
         assert len(result) == 0  # No errors means validation passed
         
         # Test missing payer name
-        transaction_835 = sample_edi_root.interchanges[0].functional_groups[0].transactions[0].financial_transaction
-        transaction_835.payer.name = ""
+        transaction = sample_edi_root.interchanges[0].functional_groups[0].transactions[0]
+        transaction.transaction_data.payer.name = ""
         
         result = rule.validate(sample_edi_root, {})
         assert len(result) > 0  # Errors mean validation failed
         
         # Reset and test invalid NPI
-        transaction_835.payer.name = "TEST PAYER"
-        transaction_835.payee.npi = "INVALID_NPI"
+        transaction.transaction_data.payer.name = "TEST PAYER"
+        transaction.transaction_data.payee.npi = "INVALID_NPI"
         
         result = rule.validate(sample_edi_root, {})
         assert len(result) > 0  # Errors mean validation failed
@@ -306,7 +307,7 @@ class Test835Validation:
 
     def test_multiple_claims_validation(self, sample_edi_root):
         """Test validation with multiple claims."""
-        transaction_835 = sample_edi_root.interchanges[0].functional_groups[0].transactions[0].financial_transaction
+        transaction = sample_edi_root.interchanges[0].functional_groups[0].transactions[0]
         
         # Add second claim
         claim2 = Claim(
@@ -335,10 +336,10 @@ class Test835Validation:
         )
         claim2.adjustments = [adjustment2]
         
-        transaction_835.claims.append(claim2)
+        transaction.transaction_data.claims.append(claim2)
         
         # Update financial total to match both claims
-        transaction_835.financial_information.total_paid = 650.00  # 400 + 250
+        transaction.transaction_data.financial_information.total_paid = 650.00  # 400 + 250
         
         # Test validation with multiple claims
         financial_rule = Financial835ValidationRule()
