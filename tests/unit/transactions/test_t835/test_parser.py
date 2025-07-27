@@ -111,13 +111,14 @@ class Test835Parser:
         
         # Verify payer/payee information using flat schema
         transaction = result.interchanges[0].functional_groups[0].transactions[0]
+        t835 = transaction.transaction_data
         
-        assert transaction.payer is not None
-        assert transaction.payer.name == "TEST PAYER"
+        assert t835.payer is not None
+        assert t835.payer.name == "TEST PAYER"
         
-        assert transaction.payee is not None
-        assert transaction.payee.name == "TEST PROVIDER"
-        assert transaction.payee.npi == "1234567890"
+        assert t835.payee is not None
+        assert t835.payee.name == "TEST PROVIDER"
+        assert t835.payee.tax_id == "1234567890"  # REF*TJ sets tax_id, not npi
 
     def test_parse_835_with_claims(self, parser_835):
         """Test parsing 835 with claim information."""

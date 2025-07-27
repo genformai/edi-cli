@@ -258,11 +258,11 @@ class Parser835(BaseParser):
                         
                 except Exception as e:
                     # Create error context and continue parsing
-                    context = create_parse_context(
+                    context = create_parse_context().metadata(
                         segment_index=segment_index,
                         control_number=getattr(state.current_transaction, 'header', {}).get('control_number'),
                         segment_id=segment_id
-                    )
+                    ).build()
                     error = EDISegmentError(f"Error processing {segment_id} segment: {e}", context)
                     state.errors.append(error)
                     self.error_handler.handle_error(error)
@@ -344,7 +344,11 @@ class Parser835(BaseParser):
             if expected_control != actual_control:
                 error = EDISegmentError(
                     f"IEA control number mismatch: expected {expected_control}, got {actual_control}",
-                    create_parse_context(segment_index, actual_control, "IEA")
+                    create_parse_context().metadata(
+                        segment_index=segment_index,
+                        control_number=actual_control,
+                        segment_id='IEA'
+                    ).build()
                 )
                 state.errors.append(error)
 
@@ -370,7 +374,11 @@ class Parser835(BaseParser):
             if expected_control != actual_control:
                 error = EDISegmentError(
                     f"GE control number mismatch: expected {expected_control}, got {actual_control}",
-                    create_parse_context(segment_index, actual_control, "GE")
+                    create_parse_context().metadata(
+                        segment_index=segment_index,
+                        control_number=actual_control,
+                        segment_id='GE'
+                    ).build()
                 )
                 state.errors.append(error)
 
@@ -402,7 +410,11 @@ class Parser835(BaseParser):
             if expected_control != actual_control:
                 error = EDISegmentError(
                     f"SE control number mismatch: expected {expected_control}, got {actual_control}",
-                    create_parse_context(segment_index, actual_control, "SE")
+                    create_parse_context().metadata(
+                        segment_index=segment_index,
+                        control_number=actual_control,
+                        segment_id='SE'
+                    ).build()
                 )
                 state.errors.append(error)
             
