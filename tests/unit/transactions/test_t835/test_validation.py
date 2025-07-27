@@ -120,7 +120,7 @@ class Test835Validation:
         
         # Test valid financial consistency
         result = rule.validate(sample_edi_root, {})
-        assert result is True
+        assert len(result) == 0  # No errors means validation passed
         
         # Test invalid financial consistency
         # Modify claim to have inconsistent totals
@@ -128,7 +128,7 @@ class Test835Validation:
         claim.total_paid = 300.00  # Should be 400.00 to match financial info
         
         result = rule.validate(sample_edi_root, {})
-        assert result is False
+        assert len(result) > 0  # Errors mean validation failed
 
     def test_claim_validation_rule(self, sample_edi_root):
         """Test Claim835ValidationRule."""
@@ -136,21 +136,21 @@ class Test835Validation:
         
         # Test valid claim
         result = rule.validate(sample_edi_root, {})
-        assert result is True
+        assert len(result) == 0  # No errors means validation passed
         
         # Test invalid claim - negative amounts
         claim = sample_edi_root.interchanges[0].functional_groups[0].transactions[0].financial_transaction.claims[0]
         claim.total_charge = -100.00
         
         result = rule.validate(sample_edi_root, {})
-        assert result is False
+        assert len(result) > 0  # Errors mean validation failed
         
         # Reset and test paid > charge
         claim.total_charge = 100.00
         claim.total_paid = 200.00  # More than charge
         
         result = rule.validate(sample_edi_root, {})
-        assert result is False
+        assert len(result) > 0  # Errors mean validation failed
 
     def test_adjustment_validation_rule(self, sample_edi_root):
         """Test Adjustment835ValidationRule."""
@@ -158,21 +158,21 @@ class Test835Validation:
         
         # Test valid adjustment
         result = rule.validate(sample_edi_root, {})
-        assert result is True
+        assert len(result) == 0  # No errors means validation passed
         
         # Test invalid adjustment - invalid group code
         adjustment = sample_edi_root.interchanges[0].functional_groups[0].transactions[0].financial_transaction.claims[0].adjustments[0]
         adjustment.group_code = "INVALID"
         
         result = rule.validate(sample_edi_root, {})
-        assert result is False
+        assert len(result) > 0  # Errors mean validation failed
         
         # Reset and test negative amount
         adjustment.group_code = "PR"
         adjustment.amount = -50.00
         
         result = rule.validate(sample_edi_root, {})
-        assert result is False
+        assert len(result) > 0  # Errors mean validation failed
 
     def test_service_validation_rule(self, sample_edi_root):
         """Test Service835ValidationRule."""
@@ -180,21 +180,21 @@ class Test835Validation:
         
         # Test valid service
         result = rule.validate(sample_edi_root, {})
-        assert result is True
+        assert len(result) == 0  # No errors means validation passed
         
         # Test invalid service - negative amounts
         service = sample_edi_root.interchanges[0].functional_groups[0].transactions[0].financial_transaction.claims[0].services[0]
         service.charge_amount = -100.00
         
         result = rule.validate(sample_edi_root, {})
-        assert result is False
+        assert len(result) > 0  # Errors mean validation failed
         
         # Reset and test paid > charge
         service.charge_amount = 100.00
         service.paid_amount = 200.00
         
         result = rule.validate(sample_edi_root, {})
-        assert result is False
+        assert len(result) > 0  # Errors mean validation failed
 
     def test_date_validation_rule(self, sample_edi_root):
         """Test Date835ValidationRule.""" 
@@ -202,14 +202,14 @@ class Test835Validation:
         
         # Test valid dates
         result = rule.validate(sample_edi_root, {})
-        assert result is True
+        assert len(result) == 0  # No errors means validation passed
         
         # Test invalid date format
         interchange = sample_edi_root.interchanges[0]
         interchange.date = "INVALID_DATE"
         
         result = rule.validate(sample_edi_root, {})
-        assert result is False
+        assert len(result) > 0  # Errors mean validation failed
 
     def test_payer_payee_validation_rule(self, sample_edi_root):
         """Test PayerPayee835ValidationRule."""
@@ -217,21 +217,21 @@ class Test835Validation:
         
         # Test valid payer/payee
         result = rule.validate(sample_edi_root, {})
-        assert result is True
+        assert len(result) == 0  # No errors means validation passed
         
         # Test missing payer name
         transaction_835 = sample_edi_root.interchanges[0].functional_groups[0].transactions[0].financial_transaction
         transaction_835.payer.name = ""
         
         result = rule.validate(sample_edi_root, {})
-        assert result is False
+        assert len(result) > 0  # Errors mean validation failed
         
         # Reset and test invalid NPI
         transaction_835.payer.name = "TEST PAYER"
         transaction_835.payee.npi = "INVALID_NPI"
         
         result = rule.validate(sample_edi_root, {})
-        assert result is False
+        assert len(result) > 0  # Errors mean validation failed
 
     def test_get_835_business_rules(self):
         """Test get_835_business_rules function."""
@@ -300,7 +300,7 @@ class Test835Validation:
             # Most rules should handle empty data gracefully
             try:
                 result = rule.validate(root, {})
-                assert isinstance(result, bool)
+                assert isinstance(result, list)  # Should return list of errors
             except Exception as e:
                 pytest.fail(f"Rule {rule.rule_id} failed on empty data: {e}")
 
@@ -343,4 +343,4 @@ class Test835Validation:
         # Test validation with multiple claims
         financial_rule = Financial835ValidationRule()
         result = financial_rule.validate(sample_edi_root, {})
-        assert result is True
+        assert len(result) == 0  # No errors means validation passed

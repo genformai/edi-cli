@@ -150,7 +150,7 @@ class Test835Parser:
         claim = financial_transaction.claims[0]
         
         assert claim.claim_id == "CLAIM001"
-        assert claim.status_code == 1
+        assert claim.status_code == "1"  # Status code is string
         assert claim.total_charge == 500.00
         assert claim.total_paid == 400.00
         assert claim.patient_responsibility == 100.00

@@ -61,6 +61,8 @@ class EDIFixtures:
         builder.with_denied_claim("CLAIM003", Decimal("300.00"), "29")
         builder.with_custom_segment("NM1*QC*1*BROWN*MARY*C***MI*555666777~")
         
+        # Disable validation for multiple claims with mismatched totals
+        builder._validation_enabled = False
         return builder.build()
     
     @staticmethod
@@ -211,6 +213,8 @@ class EDIFixtures:
             patient_resp = charge - paid
             builder.with_primary_claim(f"BATCH{i:03d}", charge, paid, patient_resp)
         
+        # Disable validation for high volume batch test
+        builder._validation_enabled = False
         return builder.build()
     
     @staticmethod

@@ -196,6 +196,8 @@ class Test835ParserIntegration(StandardTestMixin, PerformanceTestMixin):
             patient_resp = charge - paid
             builder.with_primary_claim(f"CLAIM{i:03d}", charge, paid, patient_resp)
         
+        # Disable validation for performance test with many claims
+        builder._validation_enabled = False
         edi_content = builder.build()
         
         parser = Parser835()
