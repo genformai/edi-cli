@@ -1,0 +1,256 @@
+# HIPAA Compliance Validation Rules for EDI 835 Healthcare Claim Payment/Advice
+# Based on HIPAA X12 005010X221A1 implementation guide requirements
+
+rules:
+  # Required Segments - HIPAA mandates certain segments must be present
+  - name: "hipaa_require_isa_segment"
+    description: "HIPAA requires ISA (Interchange Control Header) segment"
+    severity: "error"
+    transaction_types: ["835"]
+    category: "compliance"
+    error_code: "HIPAA_MISSING_ISA"
+    message: "HIPAA compliance violation: Missing required ISA segment"
+    conditions:
+      - field: "header"
+        operator: "not_exists"
+
+  - name: "hipaa_require_bpr_segment"
+    description: "HIPAA requires BPR (Financial Information) segment"
+    severity: "error"
+    transaction_types: ["835"]
+    category: "compliance"
+    error_code: "HIPAA_MISSING_BPR"
+    message: "HIPAA compliance violation: Missing required BPR segment"
+    conditions:
+      - field: "financial_information"
+        operator: "not_exists"
+
+  - name: "hipaa_require_trn_segment"
+    description: "HIPAA requires TRN (Trace Number) segment"
+    severity: "error"
+    transaction_types: ["835"]
+    category: "compliance"
+    error_code: "HIPAA_MISSING_TRN"
+    message: "HIPAA compliance violation: Missing required TRN segment"
+    conditions:
+      - field: "reference_numbers"
+        operator: "not_exists"
+
+  # Entity Identification Requirements
+  - name: "hipaa_require_payer_identification"
+    description: "HIPAA requires proper payer identification"
+    severity: "error"
+    transaction_types: ["835"]
+    category: "compliance"
+    error_code: "HIPAA_MISSING_PAYER_ID"
+    message: "HIPAA compliance violation: Payer identification required"
+    conditions:
+      - field: "payer.name"
+        operator: "not_exists"
+
+  - name: "hipaa_require_payee_identification"
+    description: "HIPAA requires proper payee identification"
+    severity: "error"
+    transaction_types: ["835"]
+    category: "compliance"
+    error_code: "HIPAA_MISSING_PAYEE_ID"
+    message: "HIPAA compliance violation: Payee identification required"
+    conditions:
+      - field: "payee.name"
+        operator: "not_exists"
+
+  - name: "hipaa_require_payee_npi"
+    description: "HIPAA requires NPI for healthcare providers"
+    severity: "warning"
+    transaction_types: ["835"]
+    category: "compliance"
+    error_code: "HIPAA_MISSING_NPI"
+    message: "HIPAA compliance warning: Provider NPI recommended (Tax ID may be acceptable)"
+    conditions:
+      - field: "payee.npi"
+        operator: "eq"
+        value: ""
+
+  - name: "hipaa_validate_npi_format"
+    description: "HIPAA requires NPI to be 10 digits when present"
+    severity: "warning"
+    transaction_types: ["835"]
+    category: "compliance"
+    error_code: "HIPAA_INVALID_NPI_FORMAT"
+    message: "HIPAA compliance warning: NPI must be exactly 10 digits when present"
+    conditions:
+      - field: "payee.npi"
+        operator: "not_matches"
+        value: "^(|\\d{10})$"
+
+  # Financial Information Requirements
+  - name: "hipaa_require_payment_method"
+    description: "HIPAA requires valid payment method code"
+    severity: "error"
+    transaction_types: ["835"]
+    category: "compliance"
+    error_code: "HIPAA_MISSING_PAYMENT_METHOD"
+    message: "HIPAA compliance violation: Payment method required"
+    conditions:
+      - field: "financial_information.payment_method"
+        operator: "not_exists"
+
+  - name: "hipaa_validate_payment_method_codes"
+    description: "HIPAA allows only specific payment method codes"
+    severity: "error"
+    transaction_types: ["835"]
+    category: "compliance"
+    error_code: "HIPAA_INVALID_PAYMENT_METHOD"
+    message: "HIPAA compliance violation: Invalid payment method code"
+    conditions:
+      - field: "financial_information.payment_method"
+        operator: "not_in"
+        value: ["ACH", "BOP", "CHK", "FWT", "NON"]
+
+  - name: "hipaa_require_total_paid_amount"
+    description: "HIPAA requires total actual provider payment amount"
+    severity: "error"
+    transaction_types: ["835"]
+    category: "compliance"
+    error_code: "HIPAA_MISSING_TOTAL_PAID"
+    message: "HIPAA compliance violation: Total paid amount required"
+    conditions:
+      - field: "financial_information.total_paid"
+        operator: "not_exists"
+
+  # Claim Information Requirements
+  - name: "hipaa_require_claim_payment_info"
+    description: "HIPAA requires claim payment information for each claim"
+    severity: "error"
+    transaction_types: ["835"]
+    category: "compliance"
+    error_code: "HIPAA_MISSING_CLAIM_PAYMENT"
+    message: "HIPAA compliance violation: Claim payment information required"
+    conditions:
+      - field: "claims"
+        operator: "not_exists"
+
+  - name: "hipaa_require_claim_id"
+    description: "HIPAA requires patient control number for each claim"
+    severity: "error"
+    transaction_types: ["835"]
+    category: "compliance"
+    error_code: "HIPAA_MISSING_CLAIM_ID"
+    message: "HIPAA compliance violation: Patient control number required"
+    conditions:
+      - field: "claims[0].claim_id"
+        operator: "not_exists"
+
+  - name: "hipaa_require_claim_status"
+    description: "HIPAA requires claim status code"
+    severity: "error"
+    transaction_types: ["835"]
+    category: "compliance"
+    error_code: "HIPAA_MISSING_CLAIM_STATUS"
+    message: "HIPAA compliance violation: Claim status code required"
+    conditions:
+      - field: "claims[0].status_code"
+        operator: "not_exists"
+
+  - name: "hipaa_validate_claim_status_codes"
+    description: "HIPAA allows only specific claim status codes"
+    severity: "error"
+    transaction_types: ["835"]
+    category: "compliance"
+    error_code: "HIPAA_INVALID_CLAIM_STATUS"
+    message: "HIPAA compliance violation: Invalid claim status code"
+    conditions:
+      - field: "claims[0].status_code"
+        operator: "not_in"
+        value: ["1", "2", "3", "4", "5", "19", "20", "21", "22", "23"]
+
+  - name: "hipaa_require_claim_amounts"
+    description: "HIPAA requires claim monetary amounts"
+    severity: "error"
+    transaction_types: ["835"]
+    category: "compliance"
+    error_code: "HIPAA_MISSING_CLAIM_AMOUNTS"
+    message: "HIPAA compliance violation: Claim monetary amounts required"
+    conditions:
+      - field: "claims[0].total_charge"
+        operator: "not_exists"
+
+  # Service Line Requirements (when present)
+  - name: "hipaa_validate_service_codes"
+    description: "HIPAA requires valid procedure codes for service lines"
+    severity: "warning"
+    transaction_types: ["835"]
+    category: "compliance"
+    error_code: "HIPAA_INVALID_SERVICE_CODE"
+    message: "HIPAA compliance warning: Service procedure code should follow standard format"
+    enabled: false  # Optional validation
+    conditions:
+      - field: "claims[0].services[0].service_code"
+        operator: "not_matches"
+        value: "(HC:|AD:|ER:|HC|AD|ER)?\\w+"
+
+  # Date Format Requirements
+  - name: "hipaa_validate_date_formats"
+    description: "HIPAA requires dates in CCYYMMDD format"
+    severity: "warning"
+    transaction_types: ["835"]
+    category: "compliance"
+    error_code: "HIPAA_INVALID_DATE_FORMAT"
+    message: "HIPAA compliance warning: Dates should be in CCYYMMDD format"
+    enabled: false  # Would need date field parsing
+    conditions:
+      - field: "financial_information.payment_date"
+        operator: "not_matches"
+        value: "^\\d{8}$"
+
+  # Adjustment Reason Code Requirements
+  - name: "hipaa_validate_adjustment_codes"
+    description: "HIPAA requires valid adjustment reason codes"
+    severity: "warning"
+    transaction_types: ["835"]
+    category: "compliance"
+    error_code: "HIPAA_CHECK_ADJUSTMENT_CODES"
+    message: "HIPAA compliance info: Verify adjustment reason codes are from approved lists"
+    enabled: false  # Complex validation requiring external code lists
+    conditions:
+      - field: "claims[0].adjustments"
+        operator: "exists"
+
+  # Privacy and Security Requirements
+  - name: "hipaa_check_phi_protection"
+    description: "HIPAA requires protection of PHI in transmissions"
+    severity: "info"
+    transaction_types: ["835"]
+    category: "compliance"
+    error_code: "HIPAA_PHI_REMINDER"
+    message: "HIPAA compliance reminder: Ensure PHI is properly protected in transmission"
+    enabled: false  # Informational only
+    conditions:
+      - field: "claims"
+        operator: "exists"
+
+  # Transaction Set Control Requirements
+  - name: "hipaa_require_transaction_control"
+    description: "HIPAA requires proper transaction set control"
+    severity: "error"
+    transaction_types: ["835"]
+    category: "compliance"
+    error_code: "HIPAA_MISSING_TRANSACTION_CONTROL"
+    message: "HIPAA compliance violation: Transaction set control number required"
+    conditions:
+      - field: "header.control_number"
+        operator: "not_exists"
+
+  # Version Requirements
+  - name: "hipaa_validate_version_identifier"
+    description: "HIPAA requires specific version identifier for 835"
+    severity: "error"
+    transaction_types: ["835"]
+    category: "compliance"
+    error_code: "HIPAA_INVALID_VERSION"
+    message: "HIPAA compliance violation: Must use approved 835 version identifier"
+    enabled: false  # Would need version field from functional group
+    conditions:
+      - field: "header.version_identifier"
+        operator: "ne"
+        value: "005010X221A1"

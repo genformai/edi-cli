@@ -118,10 +118,14 @@ def validate_command(input_file: str, schema: str = "x12-835-5010", verbose: boo
                 rule_files = ["validation-rules/835-basic.yml"]
             elif rule_set == "business":
                 rule_files = ["validation-rules/835-basic.yml", "validation-rules/835-business.yml"]
+            elif rule_set == "hipaa":
+                rule_files = ["validation-rules/835-basic.yml", "validation-rules/hipaa-835.yml"]
+            elif rule_set == "hipaa-advanced":
+                rule_files = ["validation-rules/835-basic.yml", "validation-rules/hipaa-835.yml", "validation-rules/hipaa-advanced.yml"]
             elif rule_set == "all":
-                rule_files = ["validation-rules/835-basic.yml", "validation-rules/835-business.yml"]
+                rule_files = ["validation-rules/835-basic.yml", "validation-rules/835-business.yml", "validation-rules/hipaa-835.yml"]
             else:
-                print(f"❌ Unknown rule set: {rule_set}. Available: basic, business, all")
+                print(f"❌ Unknown rule set: {rule_set}. Available: basic, business, hipaa, hipaa-advanced, all")
                 return 1
             
             loader = YamlValidationLoader()
@@ -291,7 +295,7 @@ Commands:
   convert <input_file> [--to json] [--out output_file] [--schema x12-835-5010]
     Convert an EDI file to another format (JSON)
     
-  validate <input_file> [--schema x12-835-5010] [--verbose] [--rules file.yml] [--rule-set basic|business|all]
+  validate <input_file> [--schema x12-835-5010] [--verbose] [--rules file.yml] [--rule-set basic|business|hipaa|hipaa-advanced|all]
     Validate an EDI file against a schema with custom validation rules
     
   inspect <input_file> [--segments NM1,CLP]
@@ -304,11 +308,12 @@ Examples:
   edi convert sample.edi --to json
   edi validate sample.edi --verbose
   edi validate sample.edi --rule-set basic --verbose
+  edi validate sample.edi --rule-set hipaa --verbose
   edi validate sample.edi --rules custom-rules.yml
   edi inspect sample.edi --segments BPR,CLP
 
-Note: YAML validation DSL framework available in v0.2.2.
-      Use --rule-set for predefined rules or --rules for custom YAML rules.
+Note: YAML validation DSL framework with HIPAA compliance available in v0.2.3.
+      Rule sets: basic, business, hipaa, hipaa-advanced, all
 """)
 
 def main():

@@ -130,6 +130,8 @@ class YamlValidationRulePlugin(BaseValidationRule):
                 # Simple field access
                 if hasattr(current, part):
                     current = getattr(current, part)
+                elif isinstance(current, dict) and part in current:
+                    current = current[part]
                 else:
                     return None
         

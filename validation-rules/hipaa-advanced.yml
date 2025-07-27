@@ -1,0 +1,236 @@
+# Advanced HIPAA Compliance Rules for EDI 835
+# These rules cover more sophisticated HIPAA requirements and best practices
+
+rules:
+  # Electronic Media Claims (EMC) Requirements
+  - name: "hipaa_electronic_signature_compliance"
+    description: "HIPAA requires proper electronic signature compliance"
+    severity: "info"
+    transaction_types: ["835"]
+    category: "compliance"
+    error_code: "HIPAA_ELECTRONIC_SIGNATURE"
+    message: "HIPAA compliance reminder: Ensure electronic signature requirements are met"
+    enabled: false
+    conditions:
+      - field: "financial_information"
+        operator: "exists"
+
+  # Minimum Necessary Standard
+  - name: "hipaa_minimum_necessary_check"
+    description: "HIPAA minimum necessary standard compliance"
+    severity: "info"
+    transaction_types: ["835"]
+    category: "compliance"
+    error_code: "HIPAA_MINIMUM_NECESSARY"
+    message: "HIPAA compliance reminder: Verify only minimum necessary PHI is included"
+    enabled: false
+    conditions:
+      - field: "claims"
+        operator: "exists"
+
+  # Business Associate Requirements
+  - name: "hipaa_business_associate_check"
+    description: "HIPAA Business Associate Agreement requirements"
+    severity: "info"
+    transaction_types: ["835"]
+    category: "compliance"
+    error_code: "HIPAA_BAA_REQUIRED"
+    message: "HIPAA compliance reminder: Ensure Business Associate Agreement is in place"
+    enabled: false
+    conditions:
+      - field: "payer"
+        operator: "exists"
+
+  # Audit Trail Requirements
+  - name: "hipaa_audit_trail_reminder"
+    description: "HIPAA requires comprehensive audit trails"
+    severity: "info"
+    transaction_types: ["835"]
+    category: "compliance"
+    error_code: "HIPAA_AUDIT_TRAIL"
+    message: "HIPAA compliance reminder: Maintain audit trail for this transaction"
+    enabled: false
+    conditions:
+      - field: "header.transaction_set_control_number"
+        operator: "exists"
+
+  # Data Integrity Requirements
+  - name: "hipaa_data_integrity_check"
+    description: "HIPAA requires data integrity measures"
+    severity: "warning"
+    transaction_types: ["835"]
+    category: "compliance"
+    error_code: "HIPAA_DATA_INTEGRITY"
+    message: "HIPAA compliance: Verify data integrity measures are implemented"
+    enabled: false
+    conditions:
+      - field: "financial_information.total_paid"
+        operator: "exists"
+
+  # Access Control Requirements
+  - name: "hipaa_access_control_reminder"
+    description: "HIPAA requires proper access controls"
+    severity: "info"
+    transaction_types: ["835"]
+    category: "compliance"
+    error_code: "HIPAA_ACCESS_CONTROL"
+    message: "HIPAA compliance reminder: Ensure proper access controls are implemented"
+    enabled: false
+    conditions:
+      - field: "payee"
+        operator: "exists"
+
+  # Transmission Security
+  - name: "hipaa_transmission_security"
+    description: "HIPAA requires secure transmission methods"
+    severity: "info"
+    transaction_types: ["835"]
+    category: "compliance"
+    error_code: "HIPAA_TRANSMISSION_SECURITY"
+    message: "HIPAA compliance reminder: Ensure secure transmission protocols are used"
+    enabled: false
+    conditions:
+      - field: "financial_information"
+        operator: "exists"
+
+  # Assigned Security Responsibility
+  - name: "hipaa_security_responsibility"
+    description: "HIPAA requires assigned security responsibility"
+    severity: "info"
+    transaction_types: ["835"]
+    category: "compliance"
+    error_code: "HIPAA_SECURITY_RESPONSIBILITY"
+    message: "HIPAA compliance reminder: Ensure security responsibility is properly assigned"
+    enabled: false
+    conditions:
+      - field: "header"
+        operator: "exists"
+
+  # Workforce Training Requirements
+  - name: "hipaa_workforce_training"
+    description: "HIPAA requires workforce training on PHI handling"
+    severity: "info"
+    transaction_types: ["835"]
+    category: "compliance"
+    error_code: "HIPAA_WORKFORCE_TRAINING"
+    message: "HIPAA compliance reminder: Ensure workforce is trained on PHI handling"
+    enabled: false
+    conditions:
+      - field: "claims"
+        operator: "exists"
+
+  # Information System Activity Review
+  - name: "hipaa_system_activity_review"
+    description: "HIPAA requires regular information system activity review"
+    severity: "info"
+    transaction_types: ["835"]
+    category: "compliance"
+    error_code: "HIPAA_SYSTEM_REVIEW"
+    message: "HIPAA compliance reminder: Regular system activity review required"
+    enabled: false
+    conditions:
+      - field: "header.transaction_set_control_number"
+        operator: "exists"
+
+  # Standard Transaction Format Compliance
+  - name: "hipaa_standard_format_compliance"
+    description: "HIPAA requires use of standard transaction formats"
+    severity: "error"
+    transaction_types: ["835"]
+    category: "compliance"
+    error_code: "HIPAA_STANDARD_FORMAT"
+    message: "HIPAA compliance violation: Must use HIPAA standard transaction format"
+    conditions:
+      - field: "header.transaction_set_code"
+        operator: "ne"
+        value: "835"
+
+  # Code Set Requirements
+  - name: "hipaa_code_set_compliance"
+    description: "HIPAA requires use of standard code sets"
+    severity: "warning"
+    transaction_types: ["835"]
+    category: "compliance"
+    error_code: "HIPAA_CODE_SET_COMPLIANCE"
+    message: "HIPAA compliance warning: Verify all codes use HIPAA standard code sets"
+    enabled: false  # Complex validation requiring code set validation
+    conditions:
+      - field: "claims[0].services"
+        operator: "exists"
+
+  # Unique Health Identifier Requirements
+  - name: "hipaa_unique_identifier_compliance"
+    description: "HIPAA requires use of standard unique identifiers"
+    severity: "warning"
+    transaction_types: ["835"]
+    category: "compliance"
+    error_code: "HIPAA_UNIQUE_IDENTIFIER"
+    message: "HIPAA compliance: Verify use of standard unique identifiers (NPI, EIN)"
+    conditions:
+      - field: "payee.npi"
+        operator: "exists"
+
+  # Notice of Privacy Practices
+  - name: "hipaa_privacy_notice_reminder"
+    description: "HIPAA requires Notice of Privacy Practices"
+    severity: "info"
+    transaction_types: ["835"]
+    category: "compliance"
+    error_code: "HIPAA_PRIVACY_NOTICE"
+    message: "HIPAA compliance reminder: Ensure Notice of Privacy Practices is provided"
+    enabled: false
+    conditions:
+      - field: "payee"
+        operator: "exists"
+
+  # Patient Rights Requirements
+  - name: "hipaa_patient_rights_compliance"
+    description: "HIPAA patient rights must be respected"
+    severity: "info"
+    transaction_types: ["835"]
+    category: "compliance"
+    error_code: "HIPAA_PATIENT_RIGHTS"
+    message: "HIPAA compliance reminder: Ensure patient rights are respected"
+    enabled: false
+    conditions:
+      - field: "claims"
+        operator: "exists"
+
+  # Administrative Safeguards
+  - name: "hipaa_administrative_safeguards"
+    description: "HIPAA requires administrative safeguards"
+    severity: "info"
+    transaction_types: ["835"]
+    category: "compliance"
+    error_code: "HIPAA_ADMIN_SAFEGUARDS"
+    message: "HIPAA compliance reminder: Ensure administrative safeguards are in place"
+    enabled: false
+    conditions:
+      - field: "financial_information"
+        operator: "exists"
+
+  # Physical Safeguards
+  - name: "hipaa_physical_safeguards"
+    description: "HIPAA requires physical safeguards"
+    severity: "info"
+    transaction_types: ["835"]
+    category: "compliance"
+    error_code: "HIPAA_PHYSICAL_SAFEGUARDS"
+    message: "HIPAA compliance reminder: Ensure physical safeguards are implemented"
+    enabled: false
+    conditions:
+      - field: "header"
+        operator: "exists"
+
+  # Technical Safeguards
+  - name: "hipaa_technical_safeguards"
+    description: "HIPAA requires technical safeguards"
+    severity: "info"
+    transaction_types: ["835"]
+    category: "compliance"
+    error_code: "HIPAA_TECHNICAL_SAFEGUARDS"
+    message: "HIPAA compliance reminder: Ensure technical safeguards are implemented"
+    enabled: false
+    conditions:
+      - field: "financial_information"
+        operator: "exists"
