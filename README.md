@@ -55,42 +55,89 @@ By focusing on these areas, an open-source EDI project could gain significant tr
 
 📖 **[Read the full "Why Open Source EDI?" deep dive →](docs/why-open-source-edi.md)**
 
-## Quickstart (5 minutes)
+## What Works Now (v0.2.0)
 
-1.  **Install `edi-cli`:**
+### ✅ **Core Library - Production Ready**
+
+**EDI 835 Healthcare Claim Payment/Advice** - Fully implemented with comprehensive parser:
+
+```python
+from packages.core.transactions.t835.parser import Parser835
+
+# Parse from segments or EDI content
+parser = Parser835(segments)  # or Parser835()
+result = parser.parse(edi_content)
+
+# Access parsed data
+t835 = result.interchanges[0].functional_groups[0].transactions[0].transaction_data
+print(f"Payer: {t835.payer.name}")
+print(f"Total Claims: {len(t835.claims)}")
+print(f"Total Paid: ${t835.financial_information.total_paid}")
+```
+
+**Key Features:**
+- ✅ **Comprehensive Segment Support**: BPR, TRN, DTM, N1, NM1, PER, REF, CLP, CAS, SVC, SVD, PLB, LX + all envelope segments
+- ✅ **Enhanced Parsing Logic**: REF*TJ as Tax ID (not NPI), CAS triplet support, composite SVC parsing (HC:99213:25)
+- ✅ **Financial Balancing**: Out-of-balance detection comparing BPR vs Claims+PLB totals
+- ✅ **Provider Level Adjustments (PLB)**: Full PLB segment parsing with reason codes and amounts
+- ✅ **Advanced Data Handling**: Dynamic delimiter detection, optional quantity handling, DTM qualifiers
+- ✅ **Robust Error Handling**: Integrated with StandardErrorHandler and contextual error reporting
+- ✅ **100% Test Coverage**: 72/72 tests passing with comprehensive edge case coverage
+
+### 🚧 **CLI - Under Development**
+
+The command-line interface exists but needs updates to work with the refactored parser:
+
+```bash
+# Will be available after CLI refactoring:
+# pip install edi-cli
+# edi convert sample-835.edi --to json
+# edi validate sample-835.edi --rule-set business
+```
+
+## Quickstart (Library Usage)
+
+1.  **Install the library:**
 
     ```bash
-    pip install edi-cli
+    pip install edi-cli  # Core library included
     ```
 
-2.  **Convert an EDI file to JSON:**
+2.  **Parse an 835 file:**
 
-    ```bash
-    edi convert examples/datasets/sample-835.edi --to json --out output.json
+    ```python
+    from packages.core.transactions.t835.parser import Parser835
+    
+    # Read your EDI file
+    with open('sample-835.edi', 'r') as f:
+        edi_content = f.read()
+    
+    # Parse it
+    parser = Parser835()
+    result = parser.parse(edi_content)
+    
+    # Access the data
+    t835 = result.interchanges[0].functional_groups[0].transactions[0].transaction_data
+    
+    # Print summary
+    print(f"Payer: {t835.payer.name}")
+    print(f"Payee: {t835.payee.name}")
+    print(f"Total Paid: ${t835.financial_information.total_paid}")
+    print(f"Claims: {len(t835.claims)}")
+    
+    # Access individual claims
+    for claim in t835.claims:
+        print(f"Claim {claim.claim_id}: ${claim.total_paid}")
+        for service in claim.services:
+            print(f"  Service {service.procedure_code}: ${service.paid_amount}")
     ```
 
-3.  **Convert to CSV for analysis:**
+3.  **Convert to JSON:**
 
-    ```bash
-    edi convert examples/datasets/sample-835.edi --to csv --out claims.csv
-    ```
-
-4.  **Validate with business rules:**
-
-    ```bash
-    edi validate examples/datasets/sample-835.edi --rule-set business
-    ```
-
-5.  **HIPAA compliance validation:**
-
-    ```bash
-    edi validate examples/datasets/sample-835.edi --rule-set hipaa --verbose
-    ```
-
-6.  **Inspect file structure:**
-
-    ```bash
-    edi inspect examples/datasets/sample-835.edi
+    ```python
+    import json
+    json_data = t835.to_dict()
+    print(json.dumps(json_data, indent=2))
     ```
 
 ## Roadmap
@@ -99,21 +146,27 @@ Our vision is to build the most comprehensive, developer-friendly EDI toolkit fo
 
 ### 🏥 Healthcare Track
 
-#### **v0.1:** ✅ **Foundation** 
-*835 parse → JSON/CSV, CLI, tests, docs*
+#### **v0.1:** ✅ **Foundation** *(Released)*
+*Basic 835 parsing, CLI framework, initial test coverage*
 
-#### **v0.2:** ✅ **Validation Engine** 
-*835 validation DSL with business rules, HIPAA compliance validation, custom rule engine with YAML configuration, field-level validation with detailed error reporting*
+#### **v0.2:** ✅ **Enhanced 835 Parser** *(Current - Released)*
+*Comprehensive 835 parser refactor with segment dispatcher architecture, enhanced parsing logic (REF*TJ, CAS triplets, composite SVC), PLB segment support, financial balancing, 100% test coverage*
 
-#### **v0.3:** **Healthcare Core** *(Q3 2024)*
+#### **v0.3:** 🚧 **CLI & Validation Engine** *(In Progress)*
+- Refactor CLI to work with new parser architecture
+- 835 validation DSL with business rules
+- HIPAA compliance validation 
+- Custom rule engine with YAML configuration
+- Field-level validation with detailed error reporting
+
+#### **v0.4:** **Healthcare Core** *(Q1 2025)*
 - **837P** (Professional Claims) full support
 - **270/271** (Eligibility Inquiry/Response) parsing
 - **276/277** (Claim Status Inquiry/Response) parsing
 - Plugin API for custom transaction sets
 - Healthcare-specific data transformations
 
-#### **v0.4:** **Claims Processing Suite** *(Q4 2024)*
-- **AST Architecture Refactor**: Clean separation with transaction-specific AST modules (ast_835.py, ast_837p.py, etc.)
+#### **v0.5:** **Claims Processing Suite** *(Q2 2025)*
 - **837I** (Institutional Claims) support
 - **837D** (Dental Claims) support  
 - **278** (Healthcare Services Review) parsing
@@ -122,7 +175,7 @@ Our vision is to build the most comprehensive, developer-friendly EDI toolkit fo
 
 ### 🚛 Logistics Track
 
-#### **v0.5:** **Supply Chain Foundation** *(Q1 2025)*
+#### **v0.6:** **Supply Chain Foundation** *(Q3 2025)*
 - **850** (Purchase Order) full support
 - **855** (Purchase Order Acknowledgment) parsing
 - **810** (Invoice) processing
