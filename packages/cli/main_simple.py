@@ -175,7 +175,7 @@ def print_help():
     print("""
 EDI CLI - A modern toolkit for working with EDI files
 
-Usage: edi <command> [arguments]
+Usage: python -m packages.cli.main_simple <command> [arguments]
 
 Commands:
   convert <input_file> [--to json] [--out output_file] [--schema x12-835-5010]
@@ -191,12 +191,9 @@ Commands:
     Show this help message
 
 Examples:
-  edi convert sample.edi --to json
-  edi validate sample.edi --verbose
-  edi inspect sample.edi --segments BPR,CLP
-
-Note: CLI functionality restored in v0.2.1 with simplified architecture.
-      Full validation engine and advanced features coming in v0.3.0.
+  python -m packages.cli.main_simple convert sample.edi --to json
+  python -m packages.cli.main_simple validate sample.edi --verbose
+  python -m packages.cli.main_simple inspect sample.edi --segments BPR,CLP
 """)
 
 def main():
@@ -285,9 +282,5 @@ def main():
         print_help()
         return 1
 
-def app():
-    """Entry point for the edi command."""
-    return main()
-
 if __name__ == "__main__":
-    sys.exit(app())
+    sys.exit(main())
