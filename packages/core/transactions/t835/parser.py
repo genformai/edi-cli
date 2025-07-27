@@ -27,13 +27,20 @@ logger = logging.getLogger(__name__)
 class Parser835(BaseParser):
     """Parser for EDI 835 Healthcare Claim Payment/Advice transactions."""
 
+    def __init__(self, segments: List[List[str]] = None):
+        """Initialize the parser with optional segments."""
+        super().__init__(segments or [])
+
     def get_transaction_codes(self) -> List[str]:
         """Get the transaction codes this parser supports."""
         return ["835"]
 
-    def parse(self) -> EdiRoot:
+    def parse(self, edi_content: str = None) -> EdiRoot:
         """
-        Parse the 835 transaction from EDI segments.
+        Parse the 835 transaction from EDI segments or content.
+
+        Args:
+            edi_content: Raw EDI content string (if not using segments from constructor)
 
         Returns:
             EdiRoot: Parsed EDI document with 835 transaction
@@ -44,6 +51,12 @@ class Parser835(BaseParser):
         try:
             logger.debug("Parsing 835 healthcare claim payment/advice transaction")
             
+            # Handle case where edi_content is provided (called by tests)
+            if edi_content:
+                segments = self._parse_edi_content(edi_content)
+            else:
+                segments = self.segments
+            
             root = EdiRoot()
             current_interchange = None
             current_functional_group = None
@@ -51,7 +64,7 @@ class Parser835(BaseParser):
             current_transaction_835 = None
             current_claim = None
             
-            for segment in self.segments:
+            for segment in segments:
                 if not segment:
                     continue
                     
@@ -143,7 +156,7 @@ class Parser835(BaseParser):
                 elif segment_id == "CLP" and current_transaction_835:
                     current_claim = Claim(
                         claim_id=self._get_element(segment, 1),
-                        status_code=self._safe_int(self._get_element(segment, 2), 1),
+                        status_code=self._get_element(segment, 2),  # Keep as string
                         total_charge=self._safe_float(self._get_element(segment, 3)),
                         total_paid=self._safe_float(self._get_element(segment, 4)),
                         patient_responsibility=self._safe_float(self._get_element(segment, 5)),
@@ -194,3 +207,21 @@ class Parser835(BaseParser):
         except Exception as e:
             logger.error(f"Error parsing 835 transaction: {e}")
             raise ValueError(f"Failed to parse 835 transaction: {e}")
+    
+    def _parse_edi_content(self, edi_content: str) -> List[List[str]]:
+        """Parse EDI content string into segments."""
+        if not edi_content:
+            return []
+        
+        # Split by segment terminator (~)
+        raw_segments = edi_content.split('~')
+        segments = []
+        
+        for raw_segment in raw_segments:
+            raw_segment = raw_segment.strip()
+            if raw_segment:
+                # Split by element separator (*)
+                elements = raw_segment.split('*')
+                segments.append(elements)
+        
+        return segments

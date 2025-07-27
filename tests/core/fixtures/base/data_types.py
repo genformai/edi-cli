@@ -78,7 +78,7 @@ class ContactInfo:
             parts.extend(["TE", self.phone])
         if self.email:
             parts.extend(["EM", self.email])
-        return f"PER*{'.'.join(parts)}~"
+        return f"PER*{'*'.join(parts)}~"
 
 
 @dataclass
@@ -187,7 +187,7 @@ class EntityInfo:
                 self.id_qualifier, self.id_value
             ]
         
-        return f"NM1*{'.'.join(str(p) for p in parts)}~"
+        return f"NM1*{'*'.join(str(p) for p in parts)}~"
 
 
 @dataclass
@@ -229,7 +229,7 @@ class ClaimData:
         if self.patient_control_number:
             parts.append(self.patient_control_number)
             
-        return f"CLP*{'.'.join(parts)}~"
+        return f"CLP*{'*'.join(parts)}~"
 
 
 @dataclass
@@ -250,7 +250,7 @@ class AdjustmentData:
         parts = [self.group_code, self.reason_code, str(self.amount)]
         if self.quantity is not None:
             parts.append(str(self.quantity))
-        return f"CAS*{'.'.join(parts)}~"
+        return f"CAS*{'*'.join(parts)}~"
 
 
 @dataclass

@@ -13,9 +13,15 @@ from ...base.edi_ast import Node
 @dataclass
 class FinancialInformation(Node):
     """Financial information from BPR segment."""
-    total_paid: int
+    total_paid: float
     payment_method: str
     payment_date: str
+
+    # Backward compatibility properties
+    @property
+    def payment_amount(self):
+        """Alias for total_paid for backward compatibility."""
+        return self.total_paid
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -48,7 +54,7 @@ class Payee(Node):
 class Claim(Node):
     """Claim information from CLP segment."""
     claim_id: str
-    status_code: int
+    status_code: str
     total_charge: float
     total_paid: float
     patient_responsibility: float
@@ -61,6 +67,22 @@ class Claim(Node):
             self.adjustments = []
         if self.services is None:
             self.services = []
+
+    # Backward compatibility properties
+    @property
+    def charge_amount(self):
+        """Alias for total_charge for backward compatibility."""
+        return self.total_charge
+    
+    @property
+    def payment_amount(self):
+        """Alias for total_paid for backward compatibility."""
+        return self.total_paid
+    
+    @property
+    def patient_responsibility_amount(self):
+        """Alias for patient_responsibility for backward compatibility."""
+        return self.patient_responsibility
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -81,7 +103,7 @@ class Adjustment(Node):
     group_code: str
     reason_code: str
     amount: float
-    quantity: int
+    quantity: float
 
     def to_dict(self) -> Dict[str, Any]:
         return {

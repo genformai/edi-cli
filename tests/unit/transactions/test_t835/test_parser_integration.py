@@ -9,7 +9,7 @@ import pytest
 import time
 from decimal import Decimal
 from packages.core.transactions.t835.parser import Parser835
-from tests.fixtures import EDIFixtures
+from tests.core.fixtures.legacy_fixtures import EDIFixtures
 from tests.shared.assertions import assert_transaction_structure, assert_financial_integrity
 from tests.shared.test_patterns import StandardTestMixin, PerformanceTestMixin
 
@@ -153,7 +153,7 @@ class Test835ParserIntegration(StandardTestMixin, PerformanceTestMixin):
 
     def test_multiple_reference_numbers(self):
         """Test parsing multiple TRN segments."""
-        from tests.fixtures.builders.builder_835 import EDI835Builder
+        from tests.core.fixtures.builders.builder_835 import EDI835Builder
         
         edi_content = (EDI835Builder()
                       .with_envelope("SENDER", "RECEIVER", "HP", "005010X221A1")
@@ -179,7 +179,7 @@ class Test835ParserIntegration(StandardTestMixin, PerformanceTestMixin):
     def test_parser_performance_large_file(self, performance_config):
         """Test parser performance with larger EDI files."""
         # Create a larger EDI file with multiple claims
-        from tests.fixtures.builders.builder_835 import EDI835Builder
+        from tests.core.fixtures.builders.builder_835 import EDI835Builder
         
         builder = (EDI835Builder()
                   .with_envelope("SENDER", "RECEIVER", "HP", "005010X221A1")

@@ -79,6 +79,43 @@ class Transaction(Node):
         # Single unified container for transaction-specific data
         self.transaction_data: Optional[Any] = transaction_data
 
+    # Backward compatibility properties for 835 transactions
+    @property
+    def financial_information(self):
+        """Access financial_information from transaction_data for backward compatibility."""
+        if (self.transaction_data and 
+            hasattr(self.transaction_data, '__class__') and 
+            self.transaction_data.__class__.__name__ == 'Transaction835'):
+            return getattr(self.transaction_data, 'financial_information', None)
+        return None
+
+    @property
+    def claims(self):
+        """Access claims from transaction_data for backward compatibility."""
+        if (self.transaction_data and 
+            hasattr(self.transaction_data, '__class__') and 
+            self.transaction_data.__class__.__name__ == 'Transaction835'):
+            return getattr(self.transaction_data, 'claims', [])
+        return []
+
+    @property
+    def payer(self):
+        """Access payer from transaction_data for backward compatibility."""
+        if (self.transaction_data and 
+            hasattr(self.transaction_data, '__class__') and 
+            self.transaction_data.__class__.__name__ == 'Transaction835'):
+            return getattr(self.transaction_data, 'payer', None)
+        return None
+
+    @property
+    def payee(self):
+        """Access payee from transaction_data for backward compatibility."""
+        if (self.transaction_data and 
+            hasattr(self.transaction_data, '__class__') and 
+            self.transaction_data.__class__.__name__ == 'Transaction835'):
+            return getattr(self.transaction_data, 'payee', None)
+        return None
+
     def to_dict(self) -> Dict[str, Any]:
         data = {"header": self.header}
         
