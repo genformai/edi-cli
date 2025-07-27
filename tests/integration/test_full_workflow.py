@@ -9,7 +9,10 @@ import pytest
 from decimal import Decimal
 from packages.core.transactions.t835.parser import Parser835
 from packages.core.plugins.plugin_835 import TransactionParser835
-from tests.fixtures import EDIFixtures, PaymentScenarios, ClaimScenarios, IntegrationScenarios
+from tests.core.fixtures.legacy_fixtures import EDIFixtures
+from tests.core.fixtures.scenarios.payment_scenarios import PaymentScenarios
+from tests.core.fixtures.scenarios.claim_scenarios import ClaimScenarios
+from tests.core.fixtures.scenarios.integration_scenarios import IntegrationScenarios
 from tests.shared.assertions import assert_balances, assert_transaction_structure, assert_financial_integrity
 
 

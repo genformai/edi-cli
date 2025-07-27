@@ -21,8 +21,6 @@ def end_to_end_parser():
 @pytest.fixture
 def sample_transaction_files(test_data):
     """Fixture providing paths to sample transaction files."""
-    return {
-        "835_minimal": "tests/fixtures/samples/835_samples/835-minimal.edi",
-        "835_multiple": "tests/fixtures/samples/835_samples/835-multiple-claims.edi",
-        "835_full": "tests/fixtures/samples/835_samples/835.edi"
-    }
+    # Note: Sample files were removed - use programmatic test data instead
+    # from tests.core.fixtures.builders for generating test transactions
+    return {}

@@ -88,7 +88,7 @@ def base_parser():
 @pytest.fixture(scope="function")
 def edi_fixtures():
     """Provide EDI fixtures instance."""
-    from tests.fixtures import EDIFixtures
+    from tests.core.fixtures.legacy_fixtures import EDIFixtures
     return EDIFixtures
 
 
@@ -196,7 +196,8 @@ def pytest_configure(config):
 @pytest.fixture(scope="session")
 def compiled_test_data():
     """Provide compiled test data that's expensive to generate."""
-    from tests.fixtures import PaymentScenarios, ClaimScenarios
+    from tests.core.fixtures.scenarios.payment_scenarios import PaymentScenarios
+    from tests.core.fixtures.scenarios.claim_scenarios import ClaimScenarios
     
     # Generate comprehensive test scenarios once per session
     payment_scenarios = PaymentScenarios()

@@ -33,9 +33,9 @@ class SharedTestFixtures:
     @staticmethod
     def get_sample_file_path(transaction_code: str, sample_name: str) -> str:
         """Get the path to a sample EDI file."""
-        base_path = Path("tests/fixtures/samples")
-        file_path = base_path / f"{transaction_code}_samples" / f"{sample_name}.edi"
-        return str(file_path)
+        # Note: Sample files were removed - use programmatic test data instead
+        # from tests.core.fixtures.builders for generating test transactions
+        raise NotImplementedError("Sample files removed - use builder classes instead")
     
     @staticmethod
     def get_test_control_numbers() -> Dict[str, str]:
