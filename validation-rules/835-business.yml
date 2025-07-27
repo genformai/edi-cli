@@ -1,0 +1,125 @@
+# Business validation rules for EDI 835 Healthcare Claim Payment/Advice
+# These rules validate business logic and financial consistency
+
+rules:
+  - name: "validate_financial_balance"
+    description: "Total BPR amount should match sum of claim payments"
+    severity: "warning"
+    transaction_types: ["835"]
+    category: "business"
+    error_code: "835_FINANCIAL_IMBALANCE"
+    message: "BPR total paid amount does not match sum of claim payments"
+    enabled: true
+    conditions:
+      # This is a complex rule that would need special handling
+      # For now, this serves as documentation of the intent
+      - field: "out_of_balance"
+        operator: "ne"
+        value: true
+
+  - name: "validate_zero_payment_claims"
+    description: "Claims with zero payment should have adjustments"
+    severity: "info"
+    transaction_types: ["835"]
+    category: "business"
+    error_code: "835_ZERO_PAYMENT_NO_ADJUSTMENTS"
+    message: "Claim with zero payment should have adjustment reasons (CAS segments)"
+    conditions:
+      - field: "claims[0].total_paid"
+        operator: "eq"
+        value: 0
+
+  - name: "validate_overpayment"
+    description: "Paid amount should not exceed charge amount"
+    severity: "warning"
+    transaction_types: ["835"]
+    category: "business"
+    error_code: "835_CLAIM_OVERPAYMENT"
+    message: "Claim paid amount exceeds charge amount"
+    conditions:
+      # This would need custom logic to compare paid vs charge
+      - field: "claims[0].total_paid"
+        operator: "exists"
+
+  - name: "validate_patient_responsibility_logic"
+    description: "Patient responsibility should be logical"
+    severity: "info"
+    transaction_types: ["835"]
+    category: "business"
+    error_code: "835_INVALID_PATIENT_RESPONSIBILITY"
+    message: "Patient responsibility amount may be incorrect"
+    conditions:
+      - field: "claims[0].patient_responsibility"
+        operator: "gte"
+        value: 0
+
+  - name: "require_adjustment_reasons"
+    description: "Claims with adjustments should have reason codes"
+    severity: "info"
+    transaction_types: ["835"]
+    category: "business"
+    error_code: "835_MISSING_ADJUSTMENT_REASONS"
+    message: "Claim adjustments should include reason codes"
+    enabled: false  # Complex rule requiring custom logic
+    conditions:
+      - field: "claims[0].adjustments"
+        operator: "exists"
+
+  - name: "validate_service_line_totals"
+    description: "Service line amounts should add up to claim totals"
+    severity: "info"
+    transaction_types: ["835"]
+    category: "business"
+    error_code: "835_SERVICE_TOTAL_MISMATCH"
+    message: "Service line amounts do not match claim totals"
+    enabled: false  # Complex rule requiring custom logic
+    conditions:
+      - field: "claims[0].services"
+        operator: "exists"
+
+  - name: "validate_plb_adjustments"
+    description: "Provider level adjustments should be reasonable"
+    severity: "info"
+    transaction_types: ["835"]
+    category: "business"
+    error_code: "835_UNUSUAL_PLB"
+    message: "Provider level adjustment may need review"
+    conditions:
+      - field: "plb"
+        operator: "exists"
+
+  - name: "validate_claim_frequency"
+    description: "Check for reasonable claim frequency patterns"
+    severity: "info"
+    transaction_types: ["835"]
+    category: "business"
+    error_code: "835_HIGH_CLAIM_VOLUME"
+    message: "High number of claims in single 835 transaction"
+    enabled: false  # Would need claim count logic
+    conditions:
+      - field: "claims"
+        operator: "exists"
+
+  - name: "validate_date_consistency"
+    description: "Payment date should be reasonable"
+    severity: "warning"
+    transaction_types: ["835"]
+    category: "business"
+    error_code: "835_INVALID_PAYMENT_DATE"
+    message: "Payment date appears to be invalid or in the future"
+    enabled: false  # Would need date parsing and comparison
+    conditions:
+      - field: "financial_information.payment_date"
+        operator: "exists"
+
+  - name: "validate_trading_partner_consistency"
+    description: "Payer and payee should be consistent with trading partner agreements"
+    severity: "info"
+    transaction_types: ["835"]
+    category: "business"
+    error_code: "835_TRADING_PARTNER_INCONSISTENCY"
+    message: "Payer/payee combination may not match trading partner setup"
+    enabled: false  # Would need external trading partner data
+    conditions:
+      - field: "payer.name"
+        operator: "exists"

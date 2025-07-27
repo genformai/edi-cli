@@ -13,6 +13,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 # Use new transaction-specific parsers
 from core.transactions.t835.parser import Parser835
+from core.validation.engine import ValidationEngine
+from core.validation.yaml_loader import YamlValidationLoader
 
 def parse_edi_content(edi_content: str, schema_name: str):
     """Parse EDI content using appropriate parser based on schema."""
@@ -71,7 +73,7 @@ def convert_command(input_file: str, output_format: str = "json", output_file: O
         print(f"❌ Error: {e}")
         return 1
 
-def validate_command(input_file: str, schema: str = "x12-835-5010", verbose: bool = False):
+def validate_command(input_file: str, schema: str = "x12-835-5010", verbose: bool = False, rules_file: str = None, rule_set: str = None):
     """Validate an EDI file against a schema."""
     try:
         if not os.path.exists(input_file):
@@ -89,35 +91,143 @@ def validate_command(input_file: str, schema: str = "x12-835-5010", verbose: boo
             print("❌ Validation failed: No valid interchanges found")
             return 1
         
-        # For now, just do basic structural validation
-        print("ℹ️  Basic validation only - full validation engine coming in v0.3.1")
+        # Initialize validation engine
+        engine = ValidationEngine()
         
-        transaction_count = 0
-        claim_count = 0
+        # Load validation rules
+        rules_loaded = 0
+        if rules_file:
+            if not os.path.exists(rules_file):
+                print(f"❌ Rules file not found: {rules_file}")
+                return 1
+            try:
+                loader = YamlValidationLoader()
+                yaml_rules = loader.load_from_file(rules_file)
+                for rule in yaml_rules:
+                    engine.register_rule_plugin(rule)
+                rules_loaded += len(yaml_rules)
+                print(f"📋 Loaded {len(yaml_rules)} custom rules from {rules_file}")
+            except Exception as e:
+                print(f"❌ Error loading rules file: {e}")
+                return 1
         
-        for interchange in result.interchanges:
-            for group in interchange.functional_groups:
-                for transaction in group.transactions:
-                    transaction_count += 1
-                    if hasattr(transaction, 'transaction_data') and transaction.transaction_data:
-                        if hasattr(transaction.transaction_data, 'claims'):
-                            claim_count += len(transaction.transaction_data.claims)
+        elif rule_set:
+            # Load predefined rule sets
+            rule_files = []
+            if rule_set == "basic":
+                rule_files = ["validation-rules/835-basic.yml"]
+            elif rule_set == "business":
+                rule_files = ["validation-rules/835-basic.yml", "validation-rules/835-business.yml"]
+            elif rule_set == "all":
+                rule_files = ["validation-rules/835-basic.yml", "validation-rules/835-business.yml"]
+            else:
+                print(f"❌ Unknown rule set: {rule_set}. Available: basic, business, all")
+                return 1
+            
+            loader = YamlValidationLoader()
+            for rule_file in rule_files:
+                if os.path.exists(rule_file):
+                    try:
+                        yaml_rules = loader.load_from_file(rule_file)
+                        for rule in yaml_rules:
+                            engine.register_rule_plugin(rule)
+                        rules_loaded += len(yaml_rules)
+                        print(f"📋 Loaded {len(yaml_rules)} rules from {rule_file}")
+                    except Exception as e:
+                        print(f"⚠️  Warning: Could not load {rule_file}: {e}")
         
-        # Basic validation passed
-        is_valid = transaction_count > 0
+        # Run validation if rules are loaded
+        if rules_loaded > 0:
+            print(f"\n🔍 Running validation with {rules_loaded} rules...")
+            validation_result = engine.validate(result)
+            
+            # Display results
+            if validation_result.is_valid:
+                print("✅ Validation passed")
+            else:
+                print("❌ Validation failed")
+            
+            print(f"\n📊 Validation Summary:")
+            print(f"  • Rules executed: {len(validation_result.executed_rules)}")
+            print(f"  • Errors: {validation_result.error_count}")
+            print(f"  • Warnings: {validation_result.warning_count}")
+            print(f"  • Info: {validation_result.info_count}")
+            print(f"  • Execution time: {validation_result.execution_time_ms:.2f}ms")
+            
+            # Show errors and warnings
+            if validation_result.errors and (verbose or len(validation_result.errors) <= 5):
+                print(f"\n🚨 Errors ({len(validation_result.errors)}):")
+                for error in validation_result.errors[:10 if not verbose else None]:
+                    print(f"  • [{error.code}] {error.message}")
+                    if verbose and error.path:
+                        print(f"    Path: {error.path}")
+            elif validation_result.errors:
+                print(f"\n🚨 {len(validation_result.errors)} errors found (use --verbose to see details)")
+            
+            if validation_result.warnings and (verbose or len(validation_result.warnings) <= 3):
+                print(f"\n⚠️  Warnings ({len(validation_result.warnings)}):")
+                for warning in validation_result.warnings[:5 if not verbose else None]:
+                    print(f"  • [{warning.code}] {warning.message}")
+                    if verbose and warning.path:
+                        print(f"    Path: {warning.path}")
+            elif validation_result.warnings:
+                print(f"\n⚠️  {len(validation_result.warnings)} warnings found (use --verbose to see details)")
+                
+            if validation_result.info and verbose:
+                print(f"\nℹ️  Info messages ({len(validation_result.info)}):")
+                for info in validation_result.info:
+                    print(f"  • [{info.code}] {info.message}")
+            
+            # Count document structure
+            transaction_count = 0
+            claim_count = 0
+            for interchange in result.interchanges:
+                for group in interchange.functional_groups:
+                    for transaction in group.transactions:
+                        transaction_count += 1
+                        if hasattr(transaction, 'transaction_data') and transaction.transaction_data:
+                            if hasattr(transaction.transaction_data, 'claims'):
+                                claim_count += len(transaction.transaction_data.claims)
+            
+            print(f"\n📋 Document Structure:")
+            print(f"  • Interchanges: {len(result.interchanges)}")
+            print(f"  • Functional Groups: {sum(len(i.functional_groups) for i in result.interchanges)}")
+            print(f"  • Transactions: {transaction_count}")
+            print(f"  • Claims: {claim_count}")
+            
+            return 0 if validation_result.is_valid else 1
         
-        if is_valid:
-            print("✅ Basic validation passed")
         else:
-            print("❌ Basic validation failed")
-        
-        print(f"\n📋 Document Structure:")
-        print(f"  • Interchanges: {len(result.interchanges)}")
-        print(f"  • Functional Groups: {sum(len(i.functional_groups) for i in result.interchanges)}")
-        print(f"  • Transactions: {transaction_count}")
-        print(f"  • Claims: {claim_count}")
-        
-        return 0 if is_valid else 1
+            # Fall back to basic validation
+            print("ℹ️  No validation rules specified. Use --rules or --rule-set for advanced validation.")
+            print("ℹ️  Running basic structural validation only...")
+            
+            transaction_count = 0
+            claim_count = 0
+            
+            for interchange in result.interchanges:
+                for group in interchange.functional_groups:
+                    for transaction in group.transactions:
+                        transaction_count += 1
+                        if hasattr(transaction, 'transaction_data') and transaction.transaction_data:
+                            if hasattr(transaction.transaction_data, 'claims'):
+                                claim_count += len(transaction.transaction_data.claims)
+            
+            # Basic validation passed
+            is_valid = transaction_count > 0
+            
+            if is_valid:
+                print("✅ Basic validation passed")
+            else:
+                print("❌ Basic validation failed")
+            
+            print(f"\n📋 Document Structure:")
+            print(f"  • Interchanges: {len(result.interchanges)}")
+            print(f"  • Functional Groups: {sum(len(i.functional_groups) for i in result.interchanges)}")
+            print(f"  • Transactions: {transaction_count}")
+            print(f"  • Claims: {claim_count}")
+            
+            return 0 if is_valid else 1
             
     except Exception as e:
         print(f"❌ Validation failed: {e}")
@@ -181,8 +291,8 @@ Commands:
   convert <input_file> [--to json] [--out output_file] [--schema x12-835-5010]
     Convert an EDI file to another format (JSON)
     
-  validate <input_file> [--schema x12-835-5010] [--verbose]
-    Validate an EDI file against a schema
+  validate <input_file> [--schema x12-835-5010] [--verbose] [--rules file.yml] [--rule-set basic|business|all]
+    Validate an EDI file against a schema with custom validation rules
     
   inspect <input_file> [--segments NM1,CLP]
     Inspect an EDI file and extract specific segments or show structure
@@ -193,10 +303,12 @@ Commands:
 Examples:
   edi convert sample.edi --to json
   edi validate sample.edi --verbose
+  edi validate sample.edi --rule-set basic --verbose
+  edi validate sample.edi --rules custom-rules.yml
   edi inspect sample.edi --segments BPR,CLP
 
-Note: CLI functionality restored in v0.2.1 with simplified architecture.
-      Full validation engine and advanced features coming in v0.3.0.
+Note: YAML validation DSL framework available in v0.2.2.
+      Use --rule-set for predefined rules or --rules for custom YAML rules.
 """)
 
 def main():
@@ -246,6 +358,8 @@ def main():
         input_file = sys.argv[2]
         schema = "x12-835-5010"
         verbose = False
+        rules_file = None
+        rule_set = None
         
         # Parse additional arguments
         i = 3
@@ -256,10 +370,16 @@ def main():
             elif sys.argv[i] == "--verbose" or sys.argv[i] == "-v":
                 verbose = True
                 i += 1
+            elif sys.argv[i] == "--rules" and i + 1 < len(sys.argv):
+                rules_file = sys.argv[i + 1]
+                i += 2
+            elif sys.argv[i] == "--rule-set" and i + 1 < len(sys.argv):
+                rule_set = sys.argv[i + 1]
+                i += 2
             else:
                 i += 1
         
-        return validate_command(input_file, schema, verbose)
+        return validate_command(input_file, schema, verbose, rules_file, rule_set)
     
     elif command == "inspect":
         if len(sys.argv) < 3:

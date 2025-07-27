@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "edi-cli"
-version = "0.2.1"
+version = "0.2.2"
 description = "A modern, open-source EDI toolkit."
 authors = ["Your Name <you@example.com>"]
 license = "MIT"

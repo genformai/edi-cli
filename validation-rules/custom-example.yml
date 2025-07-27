@@ -1,0 +1,64 @@
+# Example custom validation rules for EDI 835
+# This demonstrates how users can create their own validation logic
+
+rules:
+  - name: "high_payment_alert"
+    description: "Alert for unusually high payment amounts"
+    severity: "info"
+    transaction_types: ["835"]
+    category: "business"
+    error_code: "CUSTOM_HIGH_PAYMENT"
+    message: "Payment amount is unusually high and may need review"
+    conditions:
+      - field: "financial_information.total_paid"
+        operator: "gt"
+        value: 10000  # Alert for payments over $10,000
+
+  - name: "require_tax_id"
+    description: "Payee must have a tax ID for compliance"
+    severity: "error"
+    transaction_types: ["835"]
+    category: "compliance"
+    error_code: "CUSTOM_MISSING_TAX_ID"
+    message: "Payee must have a tax ID for regulatory compliance"
+    conditions:
+      - field: "payee.tax_id"
+        operator: "not_exists"
+
+  - name: "validate_procedure_code_pattern"
+    description: "Procedure codes should follow expected pattern"
+    severity: "warning"
+    transaction_types: ["835"]
+    category: "data"
+    error_code: "CUSTOM_INVALID_PROCEDURE_CODE"
+    message: "Service procedure code does not match expected pattern"
+    enabled: false  # Disabled by default - enable as needed
+    conditions:
+      - field: "claims[0].services[0].procedure_code"
+        operator: "not_matches"
+        value: "\\d{5}"  # 5-digit procedure code pattern
+
+  - name: "check_payment_method_ach"
+    description: "Prefer ACH payments for efficiency"
+    severity: "info"
+    transaction_types: ["835"]
+    category: "business"
+    error_code: "CUSTOM_NON_ACH_PAYMENT"
+    message: "Consider using ACH payment method for better efficiency"
+    conditions:
+      - field: "financial_information.payment_method"
+        operator: "ne"
+        value: "ACH"
+
+  - name: "validate_claim_volume"
+    description: "Check for reasonable claim counts"
+    severity: "info"
+    transaction_types: ["835"]
+    category: "business"
+    error_code: "CUSTOM_LOW_CLAIM_COUNT"
+    message: "Transaction contains only one claim - verify this is expected"
+    enabled: false  # Example of complex validation that would need custom logic
+    conditions:
+      # This would need custom logic to count claims
+      - field: "claims"
+        operator: "exists"
