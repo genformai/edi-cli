@@ -15,6 +15,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from core.transactions.t835.parser import Parser835
 from core.transactions.t837p.parser import Parser837P
 from core.transactions.t270.parser import Parser270
+from core.transactions.t276.parser import Parser276
 from core.validation.engine import ValidationEngine
 from core.validation.yaml_loader import YamlValidationLoader
 
@@ -36,8 +37,11 @@ def parse_edi_content(edi_content: str, schema_name: str):
     elif schema_name in ["x12-270-5010", "270", "271", "270/271"]:
         parser = Parser270(segments)
         return parser.parse()
+    elif schema_name in ["x12-276-5010", "276", "277", "276/277"]:
+        parser = Parser276(segments)
+        return parser.parse()
     else:
-        raise ValueError(f"Unsupported schema: {schema_name}. Currently supported: 835, 837p, 270/271")
+        raise ValueError(f"Unsupported schema: {schema_name}. Currently supported: 835, 837p, 270/271, 276/277")
 
 def convert_command(input_file: str, output_format: str = "json", output_file: Optional[str] = None, schema: str = "x12-835-5010"):
     """Convert an EDI file to another format (JSON or CSV)."""
@@ -143,6 +147,17 @@ def validate_command(input_file: str, schema: str = "x12-835-5010", verbose: boo
                     rule_files = ["validation-rules/270-271-basic.yml"]
                 else:
                     print(f"❌ Rule set '{rule_set}' not supported for 270/271. Available: basic, business, all")
+                    return 1
+            elif schema in ["x12-276-5010", "276", "277", "276/277"]:
+                # 276/277 Claim Status Inquiry/Response rules
+                if rule_set == "basic":
+                    rule_files = ["validation-rules/276-277-basic.yml"]
+                elif rule_set == "business":
+                    rule_files = ["validation-rules/276-277-basic.yml"]
+                elif rule_set == "all":
+                    rule_files = ["validation-rules/276-277-basic.yml"]
+                else:
+                    print(f"❌ Rule set '{rule_set}' not supported for 276/277. Available: basic, business, all")
                     return 1
             else:
                 # 835 Healthcare Claim Payment/Advice rules

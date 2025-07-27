@@ -1,0 +1,166 @@
+# Basic validation rules for EDI 276/277 Claim Status Inquiry/Response transactions
+# These rules validate fundamental structure and data integrity
+
+rules:
+  - name: "require_information_source"
+    description: "Ensure information source (payer) is present"
+    severity: "error"
+    transaction_types: ["276", "277"]
+    category: "structural"
+    error_code: "276_277_MISSING_PAYER"
+    message: "276/277 transaction must contain information source (payer) information"
+    conditions:
+      - field: "information_source"
+        operator: "not_exists"
+
+  - name: "require_information_receiver"
+    description: "Ensure information receiver (provider) is present"
+    severity: "error"
+    transaction_types: ["276", "277"]
+    category: "structural"
+    error_code: "276_277_MISSING_PROVIDER"
+    message: "276/277 transaction must contain information receiver (provider) information"
+    conditions:
+      - field: "information_receiver"
+        operator: "not_exists"
+
+  - name: "require_subscriber"
+    description: "Ensure subscriber information is present"
+    severity: "error"
+    transaction_types: ["276", "277"]
+    category: "structural"
+    error_code: "276_277_MISSING_SUBSCRIBER"
+    message: "276/277 transaction must contain subscriber information"
+    conditions:
+      - field: "subscriber"
+        operator: "not_exists"
+
+  - name: "require_payer_name"
+    description: "Ensure payer name is present and not empty"
+    severity: "error"
+    transaction_types: ["276", "277"]
+    category: "data"
+    error_code: "276_277_MISSING_PAYER_NAME"
+    message: "Information source (payer) name is required"
+    conditions:
+      - field: "information_source.name"
+        operator: "eq"
+        value: ""
+
+  - name: "require_provider_name"
+    description: "Ensure provider name is present and not empty"
+    severity: "error"
+    transaction_types: ["276", "277"]
+    category: "data"
+    error_code: "276_277_MISSING_PROVIDER_NAME"
+    message: "Information receiver (provider) name is required"
+    conditions:
+      - field: "information_receiver.name"
+        operator: "eq"
+        value: ""
+
+  - name: "require_provider_npi"
+    description: "Ensure provider NPI is present and not empty"
+    severity: "error"
+    transaction_types: ["276", "277"]
+    category: "data"
+    error_code: "276_277_MISSING_PROVIDER_NPI"
+    message: "Provider NPI is required"
+    conditions:
+      - field: "information_receiver.npi"
+        operator: "eq"
+        value: ""
+
+  - name: "require_member_id"
+    description: "Ensure subscriber member ID is present and not empty"
+    severity: "error"
+    transaction_types: ["276", "277"]
+    category: "data"
+    error_code: "276_277_MISSING_MEMBER_ID"
+    message: "Subscriber member ID is required"
+    conditions:
+      - field: "subscriber.member_id"
+        operator: "eq"
+        value: ""
+
+  - name: "require_subscriber_last_name"
+    description: "Ensure subscriber last name is present and not empty"
+    severity: "error"
+    transaction_types: ["276", "277"]
+    category: "data"
+    error_code: "276_277_MISSING_SUBSCRIBER_NAME"
+    message: "Subscriber last name is required"
+    conditions:
+      - field: "subscriber.last_name"
+        operator: "eq"
+        value: ""
+
+  - name: "require_276_inquiries"
+    description: "276 transaction must have claim inquiries"
+    severity: "error"
+    transaction_types: ["276"]
+    category: "business"
+    error_code: "276_MISSING_INQUIRIES"
+    message: "276 transaction must contain at least one claim status inquiry"
+    conditions:
+      - field: "claim_inquiries"
+        operator: "not_exists"
+
+  - name: "require_277_status_info"
+    description: "277 transaction should have claim status information"
+    severity: "warning"
+    transaction_types: ["277"]
+    category: "business"
+    error_code: "277_MISSING_STATUS"
+    message: "277 transaction should contain claim status information"
+    conditions:
+      - field: "claim_status_info"
+        operator: "not_exists"
+
+  - name: "validate_provider_npi_format"
+    description: "Provider NPI should be 10 digits"
+    severity: "warning"
+    transaction_types: ["276", "277"]
+    category: "data"
+    error_code: "276_277_INVALID_NPI_FORMAT"
+    message: "Provider NPI should be exactly 10 digits"
+    conditions:
+      - field: "information_receiver.npi"
+        operator: "not_matches"
+        value: "^\\d{10}$"
+
+  - name: "validate_gender_code"
+    description: "Gender code should be valid"
+    severity: "warning"
+    transaction_types: ["276", "277"]
+    category: "data"
+    error_code: "276_277_INVALID_GENDER"
+    message: "Gender code should be M (Male), F (Female), or U (Unknown)"
+    conditions:
+      - field: "subscriber.gender"
+        operator: "not_in"
+        value: ["M", "F", "U"]
+
+  - name: "validate_claim_control_number"
+    description: "Claim control number should be present in inquiries"
+    severity: "error"
+    transaction_types: ["276"]
+    category: "business"
+    error_code: "276_MISSING_CLAIM_CONTROL"
+    message: "Each claim inquiry must have a claim control number"
+    conditions:
+      - field: "claim_inquiries[0].claim_control_number"
+        operator: "eq"
+        value: ""
+
+  - name: "validate_status_code_format"
+    description: "Status codes should follow standard format"
+    severity: "warning"
+    transaction_types: ["277"]
+    category: "data"
+    error_code: "277_INVALID_STATUS_CODE"
+    message: "Status codes should follow standard X12 format (e.g., A1, A2, etc.)"
+    conditions:
+      - field: "claim_status_info[0].status_code"
+        operator: "not_matches"
+        value: "^[A-Z][0-9]$"

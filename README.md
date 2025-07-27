@@ -112,12 +112,16 @@ edi convert sample-835.edi --to json --schema 835
 edi convert sample-837.edi --to json --schema 837p
 edi convert sample-270.edi --to json --schema 270
 edi convert sample-271.edi --to json --schema 271
+edi convert sample-276.edi --to json --schema 276
+edi convert sample-277.edi --to json --schema 277
 
 # Validate with comprehensive rule sets
 edi validate sample-835.edi --rule-set comprehensive --verbose
 edi validate sample-837.edi --schema 837p --rule-set basic --verbose
 edi validate sample-270.edi --schema 270 --rule-set basic --verbose
 edi validate sample-271.edi --schema 271 --rule-set basic --verbose
+edi validate sample-276.edi --schema 276 --rule-set basic --verbose
+edi validate sample-277.edi --schema 277 --rule-set basic --verbose
 
 # Advanced business rule validation (835 only)
 edi validate sample-835.edi --rule-set enhanced-business --verbose
@@ -133,11 +137,13 @@ edi inspect sample.edi --segments BPR,CLP,SV1
 - **835**: Healthcare Claim Payment/Advice (ERA) - Complete implementation
 - **837P**: Professional Healthcare Claims - Complete implementation
 - **270/271**: Eligibility Inquiry/Response - Complete implementation
+- **276/277**: Claim Status Inquiry/Response - Complete implementation
 
 **Validation Rule Sets:**
 - **835**: `basic`, `business`, `hipaa`, `hipaa-advanced`, `enhanced-business`, `comprehensive`, `all`
 - **837P**: `basic`, `business`, `all`
 - **270/271**: `basic`, `business`, `all`
+- **276/277**: `basic`, `business`, `all`
 
 **Advanced Validation Features:**
 - ✅ **YAML DSL Framework**: Create custom validation rules without coding
@@ -262,7 +268,53 @@ edi inspect sample.edi --segments BPR,CLP,SV1
             print(f"  {message.message_text}")
     ```
 
-5.  **Convert to JSON:**
+5.  **Parse a 276/277 file (Claim Status Inquiry/Response):**
+
+    ```python
+    from packages.core.transactions.t276.parser import Parser276
+    
+    # Read your EDI file (276 or 277)
+    with open('sample-276.edi', 'r') as f:
+        edi_content = f.read()
+    
+    # Convert to segments
+    segments = []
+    for line in edi_content.replace('~', '\\n').strip().split('\\n'):
+        if line.strip():
+            segments.append(line.split('*'))
+    
+    # Parse it
+    parser = Parser276(segments)
+    result = parser.parse()
+    
+    # Access the data
+    t276_277 = result.interchanges[0].functional_groups[0].transactions[0].transaction_data
+    
+    # Print summary
+    print(f"Transaction Type: {t276_277.header.get('transaction_set_identifier')}")
+    print(f"Payer: {t276_277.information_source.name if t276_277.information_source else 'None'}")
+    print(f"Provider: {t276_277.information_receiver.name if t276_277.information_receiver else 'None'}")
+    print(f"Subscriber: {t276_277.subscriber.last_name if t276_277.subscriber else 'None'}")
+    
+    # Access transaction-specific data
+    if hasattr(t276_277, 'claim_inquiries'):
+        print(f"Claim Inquiries (276): {len(t276_277.claim_inquiries)}")
+        for inquiry in t276_277.claim_inquiries:
+            print(f"  Claim: {inquiry.claim_control_number}")
+            print(f"  Amount: ${inquiry.total_claim_charge}")
+    
+    if hasattr(t276_277, 'claim_status_info'):
+        print(f"Status Info (277): {len(t276_277.claim_status_info)}")
+        for status in t276_277.claim_status_info:
+            print(f"  Status: {status.status_code} - {status.status_category_code}")
+            
+    if hasattr(t276_277, 'messages'):
+        print(f"Messages (277): {len(t276_277.messages)}")
+        for message in t276_277.messages:
+            print(f"  {message.message_text}")
+    ```
+
+6.  **Convert to JSON:**
 
     ```python
     import json
@@ -278,12 +330,16 @@ edi inspect sample.edi --segments BPR,CLP,SV1
     edi convert sample-837.edi --schema 837p --to json --out claim-data.json
     edi convert sample-270.edi --schema 270 --to json --out eligibility-inquiry.json
     edi convert sample-271.edi --schema 271 --to json --out eligibility-response.json
+    edi convert sample-276.edi --schema 276 --to json --out claim-status-inquiry.json
+    edi convert sample-277.edi --schema 277 --to json --out claim-status-response.json
     
     # Validate with business rules
     edi validate sample-835.edi --rule-set comprehensive --verbose
     edi validate sample-837.edi --schema 837p --rule-set basic --verbose
     edi validate sample-270.edi --schema 270 --rule-set basic --verbose
     edi validate sample-271.edi --schema 271 --rule-set basic --verbose
+    edi validate sample-276.edi --schema 276 --rule-set basic --verbose
+    edi validate sample-277.edi --schema 277 --rule-set basic --verbose
     
     # HIPAA compliance checking
     edi validate sample-835.edi --rule-set hipaa-advanced --verbose
@@ -312,9 +368,9 @@ Our vision is to build the most comprehensive, developer-friendly EDI toolkit fo
 - ✅ Enhanced business rule engine with field-level validation
 - ✅ **837P** (Professional Claims) full support with CLI integration
 - ✅ **270/271** (Eligibility Inquiry/Response) parsing with CLI integration and validation
+- ✅ **276/277** (Claim Status Inquiry/Response) parsing with CLI integration and validation
 
 #### **v0.4:** **Healthcare Expansion** *(Q1 2025)*
-- **276/277** (Claim Status Inquiry/Response) parsing
 - Plugin API for custom transaction sets
 - Healthcare-specific data transformations
 - Enhanced 837P business rules and HIPAA compliance

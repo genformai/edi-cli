@@ -8,6 +8,7 @@ and Response transactions, building the AST structures defined in ast_276.py.
 from typing import Dict, List, Any, Optional
 import logging
 from ...base.parser import BaseParser
+from ...base.edi_ast import EdiRoot, Interchange, FunctionalGroup, Transaction
 from .ast import (
     Transaction276, Transaction277, InformationSourceInfo276, InformationReceiverInfo276,
     ProviderInfo276, SubscriberInfo276, PatientInfo276, ClaimStatusInquiry,
@@ -35,7 +36,7 @@ class Parser276(BaseParser):
         Parse the 276/277 transaction from EDI segments.
         
         Returns:
-            Transaction276 or Transaction277: Parsed transaction object
+            EdiRoot: Parsed transaction wrapped in EDI envelope structure
             
         Raises:
             ValueError: If unable to parse the transaction
@@ -49,17 +50,21 @@ class Parser276(BaseParser):
             logger.debug(f"Parsing {self.transaction_type or 'unknown'} transaction")
             
             if self.transaction_type == "276":
-                return self._parse_276()
+                transaction_data = self._parse_276()
             elif self.transaction_type == "277":
-                return self._parse_277()
+                transaction_data = self._parse_277()
             else:
                 # Default to 276 if unknown
                 logger.warning(f"Unknown transaction type {self.transaction_type}, defaulting to 276")
-                return self._parse_276()
+                transaction_data = self._parse_276()
+            
+            # Wrap in EdiRoot structure for CLI compatibility
+            return self._wrap_in_edi_structure(transaction_data)
         except Exception as e:
             logger.error(f"Error parsing 276/277 transaction: {e}")
             # Return minimal transaction instead of failing
-            return Transaction276(header={})
+            transaction_data = Transaction276(header={})
+            return self._wrap_in_edi_structure(transaction_data)
     
     def get_transaction_codes(self) -> List[str]:
         """Get the transaction codes this parser supports."""
@@ -444,6 +449,58 @@ class Parser276(BaseParser):
             
             message = StatusMessage(message_text=msg_segment[1])
             transaction.messages.append(message)
+    
+    def _wrap_in_edi_structure(self, transaction_data) -> EdiRoot:
+        """Wrap the parsed transaction in EdiRoot structure for CLI compatibility."""
+        # Create basic envelope structure
+        root = EdiRoot()
+        
+        # Find ISA/GS segments for envelope data
+        isa_segment = self._find_segment("ISA")
+        gs_segment = self._find_segment("GS")
+        st_segment = self._find_segment("ST")
+        
+        # Create interchange
+        if isa_segment:
+            interchange = Interchange(
+                sender_id=isa_segment[6] if len(isa_segment) > 6 else "",
+                receiver_id=isa_segment[8] if len(isa_segment) > 8 else "",
+                date=isa_segment[9] if len(isa_segment) > 9 else "",
+                time=isa_segment[10] if len(isa_segment) > 10 else "",
+                control_number=isa_segment[13] if len(isa_segment) > 13 else ""
+            )
+        else:
+            interchange = Interchange("", "", "", "", "")
+        
+        # Create functional group
+        if gs_segment:
+            functional_group = FunctionalGroup(
+                functional_group_code=gs_segment[1] if len(gs_segment) > 1 else "",
+                sender_id=gs_segment[2] if len(gs_segment) > 2 else "",
+                receiver_id=gs_segment[3] if len(gs_segment) > 3 else "",
+                date=gs_segment[4] if len(gs_segment) > 4 else "",
+                time=gs_segment[5] if len(gs_segment) > 5 else "",
+                control_number=gs_segment[6] if len(gs_segment) > 6 else ""
+            )
+        else:
+            functional_group = FunctionalGroup("", "", "", "", "", "")
+        
+        # Create transaction wrapper
+        if st_segment:
+            transaction = Transaction(
+                transaction_set_code=st_segment[1] if len(st_segment) > 1 else "",
+                control_number=st_segment[2] if len(st_segment) > 2 else "",
+                transaction_data=transaction_data
+            )
+        else:
+            transaction = Transaction("", "", transaction_data)
+        
+        # Assemble the structure
+        functional_group.transactions.append(transaction)
+        interchange.functional_groups.append(functional_group)
+        root.interchanges.append(interchange)
+        
+        return root
     
     def _find_segment(self, segment_id: str) -> Optional[List[str]]:
         """Find the first segment with the given ID."""
