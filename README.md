@@ -55,7 +55,7 @@ By focusing on these areas, an open-source EDI project could gain significant tr
 
 📖 **[Read the full "Why Open Source EDI?" deep dive →](docs/why-open-source-edi.md)**
 
-## What Works Now (v0.2.0)
+## What Works Now (v0.3.0)
 
 ### ✅ **Core Library - Production Ready**
 
@@ -75,25 +75,72 @@ print(f"Total Claims: {len(t835.claims)}")
 print(f"Total Paid: ${t835.financial_information.total_paid}")
 ```
 
+**EDI 837P Professional Claims** - Complete professional claims processing:
+
+```python
+from packages.core.transactions.t837p.parser import Parser837P
+
+parser = Parser837P(segments)
+result = parser.parse()
+
+# Access parsed data
+t837p = result.interchanges[0].functional_groups[0].transactions[0].transaction_data
+print(f"Submitter: {t837p.submitter.name}")
+print(f"Claim ID: {t837p.claim.claim_id}")
+print(f"Total Charge: ${t837p.claim.total_charge}")
+print(f"Service Lines: {len(t837p.service_lines)}")
+```
+
 **Key Features:**
-- ✅ **Comprehensive Segment Support**: BPR, TRN, DTM, N1, NM1, PER, REF, CLP, CAS, SVC, SVD, PLB, LX + all envelope segments
-- ✅ **Enhanced Parsing Logic**: REF*TJ as Tax ID (not NPI), CAS triplet support, composite SVC parsing (HC:99213:25)
-- ✅ **Financial Balancing**: Out-of-balance detection comparing BPR vs Claims+PLB totals
-- ✅ **Provider Level Adjustments (PLB)**: Full PLB segment parsing with reason codes and amounts
-- ✅ **Advanced Data Handling**: Dynamic delimiter detection, optional quantity handling, DTM qualifiers
-- ✅ **Robust Error Handling**: Integrated with StandardErrorHandler and contextual error reporting
-- ✅ **100% Test Coverage**: 72/72 tests passing with comprehensive edge case coverage
+- ✅ **835 Features**: Comprehensive segment support, financial balancing, PLB adjustments, 100% test coverage
+- ✅ **837P Features**: Complete professional claims parsing, service lines, diagnoses, provider information
+- ✅ **Advanced Validation**: YAML DSL framework, HIPAA compliance rules, business rule engine
+- ✅ **Field-Level Validation**: Enhanced business rule engine with detailed error reporting
+- ✅ **Production CLI**: Full command-line interface with convert, validate, inspect commands
+- ✅ **Multi-Transaction Support**: Schema-aware processing for both 835 and 837P transactions
 
-### 🚧 **CLI - Under Development**
+### ✅ **CLI - Production Ready**
 
-The command-line interface exists but needs updates to work with the refactored parser:
+The command-line interface is fully operational with comprehensive EDI processing capabilities:
 
 ```bash
-# Will be available after CLI refactoring:
-# pip install edi-cli
-# edi convert sample-835.edi --to json
-# edi validate sample-835.edi --rule-set business
+# Install the library and CLI
+pip install edi-cli
+
+# Convert EDI files to JSON
+edi convert sample-835.edi --to json --schema 835
+edi convert sample-837.edi --to json --schema 837p
+
+# Validate with comprehensive rule sets
+edi validate sample-835.edi --rule-set comprehensive --verbose
+edi validate sample-837.edi --schema 837p --rule-set basic --verbose
+
+# Advanced business rule validation (835 only)
+edi validate sample-835.edi --rule-set enhanced-business --verbose
+
+# HIPAA compliance validation
+edi validate sample-835.edi --rule-set hipaa-advanced --verbose
+
+# Inspect EDI structure and segments
+edi inspect sample.edi --segments BPR,CLP,SV1
 ```
+
+**Supported Transaction Sets:**
+- **835**: Healthcare Claim Payment/Advice (ERA) - Complete implementation
+- **837P**: Professional Healthcare Claims - Complete implementation
+
+**Validation Rule Sets:**
+- **835**: `basic`, `business`, `hipaa`, `hipaa-advanced`, `enhanced-business`, `comprehensive`, `all`
+- **837P**: `basic`, `business`, `all`
+
+**Advanced Validation Features:**
+- ✅ **YAML DSL Framework**: Create custom validation rules without coding
+- ✅ **HIPAA Compliance**: 39+ rules based on X12 005010X221A1 implementation guide
+- ✅ **Enhanced Business Engine**: Field-level validation with mathematical calculations
+- ✅ **Financial Balance Validation**: Automatic BPR vs Claims+PLB reconciliation 
+- ✅ **Cross-Field Validation**: Consistency checks between related fields
+- ✅ **Rich Error Context**: Detailed diagnostic information with field paths
+- ✅ **Performance Optimized**: 1-5ms execution time for typical transactions
 
 ## Quickstart (Library Usage)
 
@@ -103,7 +150,7 @@ The command-line interface exists but needs updates to work with the refactored 
     pip install edi-cli  # Core library included
     ```
 
-2.  **Parse an 835 file:**
+2.  **Parse an 835 file (Healthcare Payment Advice):**
 
     ```python
     from packages.core.transactions.t835.parser import Parser835
@@ -132,12 +179,62 @@ The command-line interface exists but needs updates to work with the refactored 
             print(f"  Service {service.procedure_code}: ${service.paid_amount}")
     ```
 
-3.  **Convert to JSON:**
+3.  **Parse an 837P file (Professional Claims):**
+
+    ```python
+    from packages.core.transactions.t837p.parser import Parser837P
+    
+    # Convert EDI string to segments
+    segments = []
+    for line in edi_content.replace('~', '\n').strip().split('\n'):
+        if line.strip():
+            segments.append(line.split('*'))
+    
+    # Parse it
+    parser = Parser837P(segments)
+    result = parser.parse()
+    
+    # Access the data
+    t837p = result.interchanges[0].functional_groups[0].transactions[0].transaction_data
+    
+    # Print claim summary
+    print(f"Submitter: {t837p.submitter.name}")
+    print(f"Billing Provider: {t837p.billing_provider.name}")
+    print(f"Subscriber: {t837p.subscriber.last_name}, {t837p.subscriber.first_name}")
+    print(f"Claim ID: {t837p.claim.claim_id}")
+    print(f"Total Charge: ${t837p.claim.total_charge}")
+    print(f"Diagnoses: {len(t837p.diagnoses)}")
+    print(f"Service Lines: {len(t837p.service_lines)}")
+    
+    # Access service lines
+    for service in t837p.service_lines:
+        print(f"Service {service.procedure_code}: ${service.charge_amount} x {service.units}")
+    ```
+
+4.  **Convert to JSON:**
 
     ```python
     import json
-    json_data = t835.to_dict()
+    json_data = t835.to_dict()  # or t837p.to_dict()
     print(json.dumps(json_data, indent=2))
+    ```
+
+5.  **CLI Usage Examples:**
+
+    ```bash
+    # Convert files
+    edi convert sample-835.edi --to json --out payment-data.json
+    edi convert sample-837.edi --schema 837p --to json --out claim-data.json
+    
+    # Validate with business rules
+    edi validate sample-835.edi --rule-set comprehensive --verbose
+    edi validate sample-837.edi --schema 837p --rule-set basic --verbose
+    
+    # HIPAA compliance checking
+    edi validate sample-835.edi --rule-set hipaa-advanced --verbose
+    
+    # Advanced field-level validation
+    edi validate sample-835.edi --rule-set enhanced-business --verbose
     ```
 
 ## Roadmap
@@ -149,22 +246,23 @@ Our vision is to build the most comprehensive, developer-friendly EDI toolkit fo
 #### **v0.1:** ✅ **Foundation** *(Released)*
 *Basic 835 parsing, CLI framework, initial test coverage*
 
-#### **v0.2:** ✅ **Enhanced 835 Parser** *(Current - Released)*
+#### **v0.2:** ✅ **Enhanced 835 Parser** *(Released)*
 *Comprehensive 835 parser refactor with segment dispatcher architecture, enhanced parsing logic (REF*TJ, CAS triplets, composite SVC), PLB segment support, financial balancing, 100% test coverage*
 
-#### **v0.3:** 🚧 **CLI & Validation Engine** *(In Progress)*
-- Refactor CLI to work with new parser architecture
-- 835 validation DSL with business rules
-- HIPAA compliance validation 
-- Custom rule engine with YAML configuration
-- Field-level validation with detailed error reporting
+#### **v0.3:** ✅ **CLI & Validation Engine** *(Completed)*
+- ✅ Refactored CLI to work with new parser architecture
+- ✅ 835 validation DSL with business rules 
+- ✅ HIPAA compliance validation with 39+ rules
+- ✅ Custom rule engine with YAML configuration
+- ✅ Enhanced business rule engine with field-level validation
+- ✅ **837P** (Professional Claims) full support with CLI integration
 
-#### **v0.4:** **Healthcare Core** *(Q1 2025)*
-- **837P** (Professional Claims) full support
+#### **v0.4:** **Healthcare Expansion** *(Q1 2025)*
 - **270/271** (Eligibility Inquiry/Response) parsing
 - **276/277** (Claim Status Inquiry/Response) parsing
 - Plugin API for custom transaction sets
 - Healthcare-specific data transformations
+- Enhanced 837P business rules and HIPAA compliance
 
 #### **v0.5:** **Claims Processing Suite** *(Q2 2025)*
 - **837I** (Institutional Claims) support
