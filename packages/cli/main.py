@@ -122,10 +122,29 @@ def validate_command(input_file: str, schema: str = "x12-835-5010", verbose: boo
                 rule_files = ["validation-rules/835-basic.yml", "validation-rules/hipaa-835.yml"]
             elif rule_set == "hipaa-advanced":
                 rule_files = ["validation-rules/835-basic.yml", "validation-rules/hipaa-835.yml", "validation-rules/hipaa-advanced.yml"]
+            elif rule_set == "enhanced-business":
+                # Use enhanced business rule engine instead of YAML rules
+                from core.validation.business_rule_plugin import BusinessRuleValidationPlugin, FieldLevelValidationPlugin
+                business_plugin = BusinessRuleValidationPlugin()
+                field_plugin = FieldLevelValidationPlugin()
+                engine.register_rule_plugin(business_plugin)
+                engine.register_rule_plugin(field_plugin)
+                rules_loaded += 2
+                print(f"📋 Loaded enhanced business rule engine with field-level validation")
             elif rule_set == "all":
                 rule_files = ["validation-rules/835-basic.yml", "validation-rules/835-business.yml", "validation-rules/hipaa-835.yml"]
+            elif rule_set == "comprehensive":
+                # Load all YAML rules + enhanced business engine
+                rule_files = ["validation-rules/835-basic.yml", "validation-rules/835-business.yml", "validation-rules/hipaa-835.yml"]
+                from core.validation.business_rule_plugin import BusinessRuleValidationPlugin, FieldLevelValidationPlugin
+                business_plugin = BusinessRuleValidationPlugin()
+                field_plugin = FieldLevelValidationPlugin()
+                engine.register_rule_plugin(business_plugin)
+                engine.register_rule_plugin(field_plugin)
+                rules_loaded += 2
+                print(f"📋 Loaded enhanced business rule engine with field-level validation")
             else:
-                print(f"❌ Unknown rule set: {rule_set}. Available: basic, business, hipaa, hipaa-advanced, all")
+                print(f"❌ Unknown rule set: {rule_set}. Available: basic, business, hipaa, hipaa-advanced, enhanced-business, comprehensive, all")
                 return 1
             
             loader = YamlValidationLoader()
@@ -313,7 +332,11 @@ Examples:
   edi inspect sample.edi --segments BPR,CLP
 
 Note: YAML validation DSL framework with HIPAA compliance available in v0.2.3.
-      Rule sets: basic, business, hipaa, hipaa-advanced, all
+      Rule sets: basic, business, hipaa, hipaa-advanced, enhanced-business, comprehensive, all
+      
+Advanced validation options:
+  enhanced-business: Advanced business rule engine with field-level validation
+  comprehensive: All YAML rules + enhanced business engine (most thorough)
 """)
 
 def main():
