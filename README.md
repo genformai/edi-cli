@@ -342,9 +342,9 @@ edi validate sample-835.edi --rule-set enhanced-business --verbose
 
 ### 🎯 **"Postman for EDI" - The Ultimate Vision**
 
-**Phase 1: CLI Foundation (Current)** → **Phase 2: Desktop App** → **Phase 3: Enterprise Platform**
+**Phase 1: CLI Foundation (✅ Completed)** → **Phase 2: Desktop App (🚀 v0.4)** → **Phase 3: Enterprise Platform**
 
-Our roadmap now aligns with creating a **developer- and analyst-friendly desktop application** that makes EDI debugging as intuitive as Postman makes API testing. The current CLI serves as the robust foundation for a future GUI application.
+Our roadmap delivers a **developer- and analyst-friendly desktop application** that makes EDI debugging as intuitive as Postman makes API testing. The robust CLI foundation we've built now powers an elegant cross-platform GUI that brings visual EDI parsing to every developer's toolkit.
 
 ### 🏥 Healthcare Track
 
@@ -364,12 +364,58 @@ Our roadmap now aligns with creating a **developer- and analyst-friendly desktop
 - ✅ **270/271** (Eligibility Inquiry/Response) parsing with CLI integration and validation
 - ✅ **276/277** (Claim Status Inquiry/Response) parsing with CLI integration and validation
 
-#### **v0.4:** **Healthcare Expansion** *(Q1 2025)*
+### 🖥️ Desktop Application Track
+
+#### **v0.4:** **"Postman for EDI" Desktop App - Validation Error Panel** *(Q1 2025)*
+**Core Focus: Advanced validation error panel for EDI analysts**
+
+**X12 850/810 Support:**
+- Complete X12 850 (Purchase Order) parser with AST generation
+- Complete X12 810 (Invoice) parser with AST generation  
+- X12 4010 subset schema validation (focused on 850/810 requirements)
+- Segment-level parsing with element validation and path tracking
+
+**Validation Panel with Contextual Errors:**
+- Error code assignment for each validation failure
+- Plain-English messages ("BEG03 (PO Date) is missing and required")
+- Segment + element path display (e.g., BEG[1]/BEG03)
+- Error severity levels (Error, Warning)
+- Base schema validation using X12 4010 subset
+
+**Partner Override Support:**
+- JSON configuration files for custom trading partner rules
+- Override required/optional segments, value constraints, length rules
+- Merge partner rules with base schema before validation
+- Partner-specific error flagging and reporting
+- Hot-reload of partner configuration changes
+
+**Error Panel Deep Linking:**
+- Clickable validation errors with instant navigation
+- Synchronized highlighting in raw EDI text view
+- Synchronized highlighting in hierarchical tree view
+- Segment-level focus and element-level precision
+- Smooth scrolling and visual feedback
+
+**File Diff Viewer:**
+- Side-by-side comparison of two parsed EDI documents (850/810)
+- Change detection: added, removed, modified values
+- Diff display by segment and element path
+- Structured DiffReport JSON output for automation
+- Visual diff indicators with color coding
+
+**Desktop App Foundation:**
+- Cross-platform Electron-based application
+- Dual-pane view: raw EDI text + hierarchical tree structure
+- Basic X12 syntax highlighting with error annotations
+- File management and session persistence
+- Optimized for speed and analyst workflow
+
+#### **v0.5:** **Healthcare Expansion** *(Q1 2025)*
 - Plugin API for custom transaction sets
 - Healthcare-specific data transformations
 - Enhanced 837P business rules and HIPAA compliance
 
-#### **v0.5:** **Claims Processing Suite** *(Q2 2025)*
+#### **v0.6:** **Claims Processing Suite** *(Q2 2025)*
 - **837I** (Institutional Claims) support
 - **837D** (Dental Claims) support  
 - **278** (Healthcare Services Review) parsing
@@ -378,14 +424,14 @@ Our roadmap now aligns with creating a **developer- and analyst-friendly desktop
 
 ### 🚛 Logistics Track
 
-#### **v0.6:** **Supply Chain Foundation** *(Q3 2025)*
+#### **v0.7:** **Supply Chain Foundation** *(Q3 2025)*
 - **850** (Purchase Order) full support
 - **855** (Purchase Order Acknowledgment) parsing
 - **810** (Invoice) processing
 - **997** (Functional Acknowledgment) handling
 - Cross-platform logistics CLI tools
 
-#### **v0.6:** **Fulfillment Engine** *(Q2 2025)*
+#### **v0.8:** **Fulfillment Engine** *(Q2 2025)*
 - **856** (Advance Shipping Notice) parsing
 - **940/945** (Warehouse Shipping Orders/Advice)
 - **944** (Stock Transfer Receipt Advice)
@@ -394,21 +440,21 @@ Our roadmap now aligns with creating a **developer- and analyst-friendly desktop
 
 ### 🏗️ Enterprise Platform
 
-#### **v0.7:** **Integration Platform** *(Q3 2025)*
+#### **v0.9:** **Integration Platform** *(Q3 2025)*
 - FastAPI service with REST/GraphQL APIs
 - Docker containerization with Kubernetes support
 - Authentication and authorization (OAuth2, SAML)
 - Multi-tenant SaaS architecture
 - Rate limiting and API gateway integration
 
-#### **v0.8:** **Production Scale** *(Q4 2025)*
+#### **v1.0:** **Production Scale** *(Q4 2025)*
 - High-performance streaming parser (millions of records/hour)
 - Event-driven architecture with message queues
 - Real-time EDI monitoring and alerting
 - Advanced analytics and business intelligence
 - Enterprise audit logs and compliance reporting
 
-#### **v0.9:** **Ecosystem** *(Q1 2026)*
+#### **v1.1:** **Ecosystem** *(Q1 2026)*
 - SFTP/AS2/AS4 protocol support
 - VAN (Value-Added Network) integrations
 - Trading partner onboarding automation
@@ -417,7 +463,7 @@ Our roadmap now aligns with creating a **developer- and analyst-friendly desktop
 
 ### 🚀 Beyond v1.0
 
-#### **v1.0:** **Industry Standard** *(Q2 2026)*
+#### **v1.2:** **Industry Standard** *(Q2 2026)*
 - Complete X12 5010 transaction set coverage (300+ document types)
 - EDIFACT support for international logistics
 - HL7/FHIR integration for healthcare interoperability
@@ -437,9 +483,11 @@ Our roadmap now aligns with creating a **developer- and analyst-friendly desktop
 - Core parsing engine for all transaction sets
 - Standard validation rules
 - CLI tools and basic integrations
+- Desktop application with core features
 - Community plugins and extensions
 
 **Enterprise Features:**
+- Advanced desktop app features (custom themes, enterprise integrations)
 - Advanced analytics and reporting
 - Priority support and SLA guarantees
 - Enterprise security and compliance
