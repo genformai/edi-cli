@@ -4,56 +4,48 @@ A modern, open-source EDI toolkit.
 
 **edi-cli** is a developer-first toolkit for parsing, validating, and transforming Electronic Data Interchange (EDI) files. It provides a fast, well-tested core library and a user-friendly command-line interface (CLI) to streamline working with complex EDI formats.
 
-## Why Open Source EDI?
+📖 **[Read "Why Open Source EDI?" →](why-open-source-edi.md)**
 
-Despite a market dominated by commercial vendors, significant and compelling open-source opportunities exist for Electronic Data Interchange (EDI). The inertia and legacy architecture of many established solutions have created gaps that a modern, developer-focused open-source project could effectively fill. The key lies in shifting the paradigm from monolithic, all-in-one platforms to more flexible, composable, and developer-centric tools that align with contemporary software development practices.
+## Getting Started
 
-Here are some of the most promising open-source opportunities in the EDI space:
+### Installation
 
-### 1. The Developer-Centric EDI Toolkit: "EDI-as-Code"
-The most significant opportunity lies in creating a suite of tools that treat EDI as a development concern, not just a business process. This "EDI-as-Code" approach would resonate strongly with modern DevOps and software engineering teams.
+```bash
+pip install edi-cli
+```
 
-**Core Components:** This toolkit would include a high-performance parsing and serialization library for various EDI standards (X12, EDIFACT), a powerful and intuitive mapping engine that uses a declarative syntax (like YAML or a domain-specific language), and a robust validation framework.
+### Quick Examples
 
-**Version Control and CI/CD:** A key innovation would be to enable the management of EDI maps and configurations within a Git repository. This would allow for versioning, collaborative development, and integration into CI/CD pipelines for automated testing and deployment.
+**Parse an 835 Healthcare Payment file:**
 
-**Command-Line Interface (CLI):** A powerful and scriptable CLI would be essential for developers to integrate EDI processes into their existing workflows and automation scripts.
+```python
+from packages.core.transactions.t835.parser import Parser835
 
-### 2. A Modern, API-First EDI Translator
-Many businesses are moving towards API-driven architectures. An open-source EDI solution that bridges the gap between legacy EDI and modern RESTful APIs would be incredibly valuable.
+# Read and parse
+with open('sample-835.edi', 'r') as f:
+    edi_content = f.read()
 
-**Lightweight and Embeddable:** Instead of a large, standalone application, this would be a lightweight, embeddable engine that can be easily integrated into existing applications and microservices.
+parser = Parser835()
+result = parser.parse(edi_content)
 
-**Automatic API Generation:** A truly innovative feature would be the ability to automatically generate an OpenAPI (Swagger) specification from an EDI implementation guide, and vice-versa. This would dramatically simplify the process of exposing EDI data as a modern API.
+# Access data
+t835 = result.interchanges[0].functional_groups[0].transactions[0].transaction_data
+print(f"Payer: {t835.payer.name}")
+print(f"Total Paid: ${t835.financial_information.total_paid}")
+```
 
-**JSON-Native:** The tool would work natively with JSON, allowing for easy manipulation and integration of EDI data within modern applications before translating to and from the rigid EDI format.
+**CLI Usage:**
 
-### 3. A User-Friendly, Self-Hosted Web UI for EDI Management
-While the backend can be developer-focused, a user-friendly front-end is still crucial for business users and support teams. An open-source project could provide a modern, intuitive web interface for managing the entire EDI lifecycle.
+```bash
+# Convert EDI to JSON
+edi convert sample-835.edi --to json --schema 835
 
-**Visual Mapping Tool:** A drag-and-drop interface for creating and managing EDI maps would lower the barrier to entry for non-developers.
+# Validate with comprehensive rules
+edi validate sample-835.edi --rule-set comprehensive --verbose
 
-**Intuitive Dashboard and Monitoring:** A dashboard providing real-time visibility into transaction status, errors, and partner activity would be a significant improvement over the often-clunky interfaces of older systems.
-
-**Simplified Partner Management:** An easy-to-use interface for onboarding new trading partners and configuring their specific requirements would be a major selling point.
-
-### 4. Cloud-Native and Serverless EDI
-As businesses increasingly move to the cloud, there is a need for EDI solutions that can leverage the benefits of cloud-native architectures.
-
-**Serverless-First Design:** An EDI translator designed to run efficiently on serverless platforms like AWS Lambda, Azure Functions, or Google Cloud Functions would offer incredible scalability and cost-effectiveness.
-
-**Containerized Deployment:** Providing well-documented Docker and Kubernetes configurations would allow for easy deployment and scaling in any cloud environment.
-
-**Integration with Cloud Services:** The tool could offer native integrations with cloud services like object storage (S3, Blob Storage) for archiving, queuing services (SQS, Azure Service Bus) for message processing, and cloud-based databases for logging and analytics.
-
-### 5. Niche Industry-Specific Solutions
-Instead of trying to be a one-size-fits-all solution, an open-source project could focus on the specific needs of a particular industry, such as healthcare (HIPAA), logistics, or retail. This would allow for a more tailored and feature-rich offering that could compete effectively with commercial vendors in that niche.
-
----
-
-By focusing on these areas, an open-source EDI project could gain significant traction. The key to success would be to learn from the successes of other open-source projects: build a strong community, prioritize developer experience, and offer a more flexible and modern alternative to the entrenched incumbents. The opportunity is ripe for a project that empowers developers to solve their own EDI challenges with tools that feel familiar and powerful.
-
-📖 **[Read the full "Why Open Source EDI?" deep dive →](docs/why-open-source-edi.md)**
+# Inspect EDI structure
+edi inspect sample.edi --segments BPR,CLP,SV1
+```
 
 ## What Works Now (v0.3.0)
 
@@ -154,199 +146,195 @@ edi inspect sample.edi --segments BPR,CLP,SV1
 - ✅ **Rich Error Context**: Detailed diagnostic information with field paths
 - ✅ **Performance Optimized**: 1-5ms execution time for typical transactions
 
-## Quickstart (Library Usage)
+## Detailed Usage Examples
 
-1.  **Install the library:**
+### Library Usage
 
-    ```bash
-    pip install edi-cli  # Core library included
-    ```
+**Parse an 835 file (Healthcare Payment Advice):**
 
-2.  **Parse an 835 file (Healthcare Payment Advice):**
+```python
+from packages.core.transactions.t835.parser import Parser835
 
-    ```python
-    from packages.core.transactions.t835.parser import Parser835
-    
-    # Read your EDI file
-    with open('sample-835.edi', 'r') as f:
-        edi_content = f.read()
-    
-    # Parse it
-    parser = Parser835()
-    result = parser.parse(edi_content)
-    
-    # Access the data
-    t835 = result.interchanges[0].functional_groups[0].transactions[0].transaction_data
-    
-    # Print summary
-    print(f"Payer: {t835.payer.name}")
-    print(f"Payee: {t835.payee.name}")
-    print(f"Total Paid: ${t835.financial_information.total_paid}")
-    print(f"Claims: {len(t835.claims)}")
-    
-    # Access individual claims
-    for claim in t835.claims:
-        print(f"Claim {claim.claim_id}: ${claim.total_paid}")
-        for service in claim.services:
-            print(f"  Service {service.procedure_code}: ${service.paid_amount}")
-    ```
+# Read your EDI file
+with open('sample-835.edi', 'r') as f:
+    edi_content = f.read()
 
-3.  **Parse an 837P file (Professional Claims):**
+# Parse it
+parser = Parser835()
+result = parser.parse(edi_content)
 
-    ```python
-    from packages.core.transactions.t837p.parser import Parser837P
-    
-    # Convert EDI string to segments
-    segments = []
-    for line in edi_content.replace('~', '\n').strip().split('\n'):
-        if line.strip():
-            segments.append(line.split('*'))
-    
-    # Parse it
-    parser = Parser837P(segments)
-    result = parser.parse()
-    
-    # Access the data
-    t837p = result.interchanges[0].functional_groups[0].transactions[0].transaction_data
-    
-    # Print claim summary
-    print(f"Submitter: {t837p.submitter.name}")
-    print(f"Billing Provider: {t837p.billing_provider.name}")
-    print(f"Subscriber: {t837p.subscriber.last_name}, {t837p.subscriber.first_name}")
-    print(f"Claim ID: {t837p.claim.claim_id}")
-    print(f"Total Charge: ${t837p.claim.total_charge}")
-    print(f"Diagnoses: {len(t837p.diagnoses)}")
-    print(f"Service Lines: {len(t837p.service_lines)}")
-    
-    # Access service lines
-    for service in t837p.service_lines:
-        print(f"Service {service.procedure_code}: ${service.charge_amount} x {service.units}")
-    ```
+# Access the data
+t835 = result.interchanges[0].functional_groups[0].transactions[0].transaction_data
 
-4.  **Parse a 270/271 file (Eligibility Inquiry/Response):**
+# Print summary
+print(f"Payer: {t835.payer.name}")
+print(f"Payee: {t835.payee.name}")
+print(f"Total Paid: ${t835.financial_information.total_paid}")
+print(f"Claims: {len(t835.claims)}")
 
-    ```python
-    from packages.core.transactions.t270.parser import Parser270
-    
-    # Read your EDI file (270 or 271)
-    with open('sample-270.edi', 'r') as f:
-        edi_content = f.read()
-    
-    # Convert to segments
-    segments = []
-    for line in edi_content.replace('~', '\\n').strip().split('\\n'):
-        if line.strip():
-            segments.append(line.split('*'))
-    
-    # Parse it
-    parser = Parser270(segments)
-    result = parser.parse()
-    
-    # Access the data
-    t270_271 = result.interchanges[0].functional_groups[0].transactions[0].transaction_data
-    
-    # Print summary
-    print(f"Transaction Type: {t270_271.header.get('transaction_set_identifier')}")
-    print(f"Payer: {t270_271.information_source.name if t270_271.information_source else 'None'}")
-    print(f"Provider: {t270_271.information_receiver.name if t270_271.information_receiver else 'None'}")
-    print(f"Subscriber: {t270_271.subscriber.last_name if t270_271.subscriber else 'None'}")
-    
-    # Access transaction-specific data
-    if hasattr(t270_271, 'eligibility_inquiries'):
-        print(f"Inquiries (270): {len(t270_271.eligibility_inquiries)}")
-        for inquiry in t270_271.eligibility_inquiries:
-            print(f"  Service Type: {inquiry.service_type_code}")
-    
-    if hasattr(t270_271, 'eligibility_benefits'):
-        print(f"Benefits (271): {len(t270_271.eligibility_benefits)}")
-        for benefit in t270_271.eligibility_benefits:
-            print(f"  {benefit.service_type_code}: {benefit.eligibility_code}")
-    
-    if hasattr(t270_271, 'messages'):
-        print(f"Messages (271): {len(t270_271.messages)}")
-        for message in t270_271.messages:
-            print(f"  {message.message_text}")
-    ```
+# Access individual claims
+for claim in t835.claims:
+    print(f"Claim {claim.claim_id}: ${claim.total_paid}")
+    for service in claim.services:
+        print(f"  Service {service.procedure_code}: ${service.paid_amount}")
+```
 
-5.  **Parse a 276/277 file (Claim Status Inquiry/Response):**
+**Parse an 837P file (Professional Claims):**
 
-    ```python
-    from packages.core.transactions.t276.parser import Parser276
-    
-    # Read your EDI file (276 or 277)
-    with open('sample-276.edi', 'r') as f:
-        edi_content = f.read()
-    
-    # Convert to segments
-    segments = []
-    for line in edi_content.replace('~', '\\n').strip().split('\\n'):
-        if line.strip():
-            segments.append(line.split('*'))
-    
-    # Parse it
-    parser = Parser276(segments)
-    result = parser.parse()
-    
-    # Access the data
-    t276_277 = result.interchanges[0].functional_groups[0].transactions[0].transaction_data
-    
-    # Print summary
-    print(f"Transaction Type: {t276_277.header.get('transaction_set_identifier')}")
-    print(f"Payer: {t276_277.information_source.name if t276_277.information_source else 'None'}")
-    print(f"Provider: {t276_277.information_receiver.name if t276_277.information_receiver else 'None'}")
-    print(f"Subscriber: {t276_277.subscriber.last_name if t276_277.subscriber else 'None'}")
-    
-    # Access transaction-specific data
-    if hasattr(t276_277, 'claim_inquiries'):
-        print(f"Claim Inquiries (276): {len(t276_277.claim_inquiries)}")
-        for inquiry in t276_277.claim_inquiries:
-            print(f"  Claim: {inquiry.claim_control_number}")
-            print(f"  Amount: ${inquiry.total_claim_charge}")
-    
-    if hasattr(t276_277, 'claim_status_info'):
-        print(f"Status Info (277): {len(t276_277.claim_status_info)}")
-        for status in t276_277.claim_status_info:
-            print(f"  Status: {status.status_code} - {status.status_category_code}")
-            
-    if hasattr(t276_277, 'messages'):
-        print(f"Messages (277): {len(t276_277.messages)}")
-        for message in t276_277.messages:
-            print(f"  {message.message_text}")
-    ```
+```python
+from packages.core.transactions.t837p.parser import Parser837P
 
-6.  **Convert to JSON:**
+# Convert EDI string to segments
+segments = []
+for line in edi_content.replace('~', '\n').strip().split('\n'):
+    if line.strip():
+        segments.append(line.split('*'))
 
-    ```python
-    import json
-    json_data = t835.to_dict()  # or t837p.to_dict()
-    print(json.dumps(json_data, indent=2))
-    ```
+# Parse it
+parser = Parser837P(segments)
+result = parser.parse()
 
-5.  **CLI Usage Examples:**
+# Access the data
+t837p = result.interchanges[0].functional_groups[0].transactions[0].transaction_data
 
-    ```bash
-    # Convert files
-    edi convert sample-835.edi --to json --out payment-data.json
-    edi convert sample-837.edi --schema 837p --to json --out claim-data.json
-    edi convert sample-270.edi --schema 270 --to json --out eligibility-inquiry.json
-    edi convert sample-271.edi --schema 271 --to json --out eligibility-response.json
-    edi convert sample-276.edi --schema 276 --to json --out claim-status-inquiry.json
-    edi convert sample-277.edi --schema 277 --to json --out claim-status-response.json
-    
-    # Validate with business rules
-    edi validate sample-835.edi --rule-set comprehensive --verbose
-    edi validate sample-837.edi --schema 837p --rule-set basic --verbose
-    edi validate sample-270.edi --schema 270 --rule-set basic --verbose
-    edi validate sample-271.edi --schema 271 --rule-set basic --verbose
-    edi validate sample-276.edi --schema 276 --rule-set basic --verbose
-    edi validate sample-277.edi --schema 277 --rule-set basic --verbose
-    
-    # HIPAA compliance checking
-    edi validate sample-835.edi --rule-set hipaa-advanced --verbose
-    
-    # Advanced field-level validation
-    edi validate sample-835.edi --rule-set enhanced-business --verbose
-    ```
+# Print claim summary
+print(f"Submitter: {t837p.submitter.name}")
+print(f"Billing Provider: {t837p.billing_provider.name}")
+print(f"Subscriber: {t837p.subscriber.last_name}, {t837p.subscriber.first_name}")
+print(f"Claim ID: {t837p.claim.claim_id}")
+print(f"Total Charge: ${t837p.claim.total_charge}")
+print(f"Diagnoses: {len(t837p.diagnoses)}")
+print(f"Service Lines: {len(t837p.service_lines)}")
+
+# Access service lines
+for service in t837p.service_lines:
+    print(f"Service {service.procedure_code}: ${service.charge_amount} x {service.units}")
+```
+
+**Parse a 270/271 file (Eligibility Inquiry/Response):**
+
+```python
+from packages.core.transactions.t270.parser import Parser270
+
+# Read your EDI file (270 or 271)
+with open('sample-270.edi', 'r') as f:
+    edi_content = f.read()
+
+# Convert to segments
+segments = []
+for line in edi_content.replace('~', '\\n').strip().split('\\n'):
+    if line.strip():
+        segments.append(line.split('*'))
+
+# Parse it
+parser = Parser270(segments)
+result = parser.parse()
+
+# Access the data
+t270_271 = result.interchanges[0].functional_groups[0].transactions[0].transaction_data
+
+# Print summary
+print(f"Transaction Type: {t270_271.header.get('transaction_set_identifier')}")
+print(f"Payer: {t270_271.information_source.name if t270_271.information_source else 'None'}")
+print(f"Provider: {t270_271.information_receiver.name if t270_271.information_receiver else 'None'}")
+print(f"Subscriber: {t270_271.subscriber.last_name if t270_271.subscriber else 'None'}")
+
+# Access transaction-specific data
+if hasattr(t270_271, 'eligibility_inquiries'):
+    print(f"Inquiries (270): {len(t270_271.eligibility_inquiries)}")
+    for inquiry in t270_271.eligibility_inquiries:
+        print(f"  Service Type: {inquiry.service_type_code}")
+
+if hasattr(t270_271, 'eligibility_benefits'):
+    print(f"Benefits (271): {len(t270_271.eligibility_benefits)}")
+    for benefit in t270_271.eligibility_benefits:
+        print(f"  {benefit.service_type_code}: {benefit.eligibility_code}")
+
+if hasattr(t270_271, 'messages'):
+    print(f"Messages (271): {len(t270_271.messages)}")
+    for message in t270_271.messages:
+        print(f"  {message.message_text}")
+```
+
+**Parse a 276/277 file (Claim Status Inquiry/Response):**
+
+```python
+from packages.core.transactions.t276.parser import Parser276
+
+# Read your EDI file (276 or 277)
+with open('sample-276.edi', 'r') as f:
+    edi_content = f.read()
+
+# Convert to segments
+segments = []
+for line in edi_content.replace('~', '\\n').strip().split('\\n'):
+    if line.strip():
+        segments.append(line.split('*'))
+
+# Parse it
+parser = Parser276(segments)
+result = parser.parse()
+
+# Access the data
+t276_277 = result.interchanges[0].functional_groups[0].transactions[0].transaction_data
+
+# Print summary
+print(f"Transaction Type: {t276_277.header.get('transaction_set_identifier')}")
+print(f"Payer: {t276_277.information_source.name if t276_277.information_source else 'None'}")
+print(f"Provider: {t276_277.information_receiver.name if t276_277.information_receiver else 'None'}")
+print(f"Subscriber: {t276_277.subscriber.last_name if t276_277.subscriber else 'None'}")
+
+# Access transaction-specific data
+if hasattr(t276_277, 'claim_inquiries'):
+    print(f"Claim Inquiries (276): {len(t276_277.claim_inquiries)}")
+    for inquiry in t276_277.claim_inquiries:
+        print(f"  Claim: {inquiry.claim_control_number}")
+        print(f"  Amount: ${inquiry.total_claim_charge}")
+
+if hasattr(t276_277, 'claim_status_info'):
+    print(f"Status Info (277): {len(t276_277.claim_status_info)}")
+    for status in t276_277.claim_status_info:
+        print(f"  Status: {status.status_code} - {status.status_category_code}")
+        
+if hasattr(t276_277, 'messages'):
+    print(f"Messages (277): {len(t276_277.messages)}")
+    for message in t276_277.messages:
+        print(f"  {message.message_text}")
+```
+
+**Convert to JSON:**
+
+```python
+import json
+json_data = t835.to_dict()  # or t837p.to_dict()
+print(json.dumps(json_data, indent=2))
+```
+
+### CLI Usage Examples
+
+```bash
+# Convert files
+edi convert sample-835.edi --to json --out payment-data.json
+edi convert sample-837.edi --schema 837p --to json --out claim-data.json
+edi convert sample-270.edi --schema 270 --to json --out eligibility-inquiry.json
+edi convert sample-271.edi --schema 271 --to json --out eligibility-response.json
+edi convert sample-276.edi --schema 276 --to json --out claim-status-inquiry.json
+edi convert sample-277.edi --schema 277 --to json --out claim-status-response.json
+
+# Validate with business rules
+edi validate sample-835.edi --rule-set comprehensive --verbose
+edi validate sample-837.edi --schema 837p --rule-set basic --verbose
+edi validate sample-270.edi --schema 270 --rule-set basic --verbose
+edi validate sample-271.edi --schema 271 --rule-set basic --verbose
+edi validate sample-276.edi --schema 276 --rule-set basic --verbose
+edi validate sample-277.edi --schema 277 --rule-set basic --verbose
+
+# HIPAA compliance checking
+edi validate sample-835.edi --rule-set hipaa-advanced --verbose
+
+# Advanced field-level validation
+edi validate sample-835.edi --rule-set enhanced-business --verbose
+```
 
 ## Roadmap
 
