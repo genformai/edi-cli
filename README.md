@@ -350,7 +350,13 @@ edi inspect sample.edi --segments BPR,CLP,SV1
 
 ## Roadmap
 
-Our vision is to build the most comprehensive, developer-friendly EDI toolkit for healthcare and logistics. From simple parsing to enterprise-grade integration, we're creating the infrastructure that powers modern B2B data exchange.
+**Our Vision:** Build the "Postman for EDI" - the most comprehensive, developer-friendly EDI platform that makes reading, validating, and debugging EDI files trivial. From simple parsing to enterprise-grade integration, we're creating the infrastructure that powers modern B2B data exchange.
+
+### 🎯 **"Postman for EDI" - The Ultimate Vision**
+
+**Phase 1: CLI Foundation (Current)** → **Phase 2: Desktop App** → **Phase 3: Enterprise Platform**
+
+Our roadmap now aligns with creating a **developer- and analyst-friendly desktop application** that makes EDI debugging as intuitive as Postman makes API testing. The current CLI serves as the robust foundation for a future GUI application.
 
 ### 🏥 Healthcare Track
 

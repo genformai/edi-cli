@@ -6,42 +6,67 @@ import sys
 import os
 import json
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List
 
 # Add parent directory to path for imports
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-# Use new transaction-specific parsers
-from core.transactions.t835.parser import Parser835
-from core.transactions.t837p.parser import Parser837P
-from core.transactions.t270.parser import Parser270
-from core.transactions.t276.parser import Parser276
+# Use plugin-based architecture
+from core.plugins.api import PluginManager, plugin_registry
 from core.validation.engine import ValidationEngine
 from core.validation.yaml_loader import YamlValidationLoader
 
+# Initialize plugin system
+plugin_manager = PluginManager()
+plugin_manager.load_builtin_plugins()
+
 def parse_edi_content(edi_content: str, schema_name: str):
-    """Parse EDI content using appropriate parser based on schema."""
+    """Parse EDI content using plugin-based parser system."""
     # Convert EDI string to segments
     segments = []
     for line in edi_content.replace('~', '\n').strip().split('\n'):
         if line.strip():
             segments.append(line.split('*'))
     
-    # Use appropriate parser based on schema
-    if schema_name in ["x12-835-5010", "835"]:
-        parser = Parser835(segments)
-        return parser.parse()
-    elif schema_name in ["x12-837p-5010", "837p", "837"]:
-        parser = Parser837P(segments)
-        return parser.parse()
-    elif schema_name in ["x12-270-5010", "270", "271", "270/271"]:
-        parser = Parser270(segments)
-        return parser.parse()
-    elif schema_name in ["x12-276-5010", "276", "277", "276/277"]:
-        parser = Parser276(segments)
-        return parser.parse()
-    else:
-        raise ValueError(f"Unsupported schema: {schema_name}. Currently supported: 835, 837p, 270/271, 276/277")
+    # Determine transaction code from schema name
+    transaction_code = _extract_transaction_code(schema_name, segments)
+    
+    # Get parser plugin for transaction code
+    parser_plugin = plugin_registry.get_parser_for_transaction(transaction_code)
+    if not parser_plugin:
+        # List available transaction codes
+        available_parsers = plugin_registry.list_registered_parsers()
+        available_codes = []
+        for parser_info in available_parsers.values():
+            available_codes.extend(parser_info['transaction_codes'])
+        
+        raise ValueError(f"No parser plugin found for transaction code '{transaction_code}'. "
+                        f"Available: {', '.join(sorted(set(available_codes)))}")
+    
+    # Parse using plugin
+    return parser_plugin.parse(segments)
+
+
+def _extract_transaction_code(schema_name: str, segments: List[List[str]]) -> str:
+    """Extract transaction code from schema name or segments."""
+    # Direct mapping for common schema names
+    schema_mappings = {
+        "x12-835-5010": "835", "835": "835",
+        "x12-837p-5010": "837", "837p": "837", "837": "837",
+        "x12-270-5010": "270", "270": "270", "271": "271", "270/271": "270",
+        "x12-276-5010": "276", "276": "276", "277": "277", "276/277": "276"
+    }
+    
+    if schema_name in schema_mappings:
+        return schema_mappings[schema_name]
+    
+    # Extract from ST segment if not in mapping
+    for segment in segments:
+        if segment and segment[0] == "ST" and len(segment) > 1:
+            return segment[1]
+    
+    # Default fallback
+    return schema_name
 
 def convert_command(input_file: str, output_format: str = "json", output_file: Optional[str] = None, schema: str = "x12-835-5010"):
     """Convert an EDI file to another format (JSON or CSV)."""
