@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EDI CLI Desktop - Postman for EDI</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="../node_modules/monaco-editor/min/vs/editor/editor.main.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <h1 class="app-title">EDI CLI Desktop</h1>
+                <span class="file-name" id="current-file-name">No file open</span>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-primary" id="open-file-btn">Open File</button>
+                <button class="btn btn-secondary" id="validate-btn" disabled>Validate</button>
+                <button class="btn btn-secondary" id="parse-btn" disabled>Parse</button>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Left Panel: Raw EDI Text -->
+            <div class="panel left-panel">
+                <div class="panel-header">
+                    <h3>Raw EDI</h3>
+                    <div class="panel-controls">
+                        <button class="btn btn-sm" id="format-btn" disabled>Format</button>
+                        <button class="btn btn-sm" id="syntax-highlight-btn">Syntax</button>
+                    </div>
+                </div>
+                <div class="panel-content">
+                    <div id="raw-editor" class="editor-container">
+                        <div class="empty-state">
+                            <div class="empty-icon">📄</div>
+                            <h3>No EDI File Loaded</h3>
+                            <p>Open an EDI file to start parsing and validation</p>
+                            <button class="btn btn-primary" id="empty-open-btn">Open EDI File</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Splitter -->
+            <div class="splitter" id="main-splitter"></div>
+
+            <!-- Right Panel: Tree View -->
+            <div class="panel right-panel">
+                <div class="panel-header">
+                    <h3>Structure</h3>
+                    <div class="panel-controls">
+                        <button class="btn btn-sm" id="expand-all-btn" disabled>Expand All</button>
+                        <button class="btn btn-sm" id="collapse-all-btn" disabled>Collapse</button>
+                    </div>
+                </div>
+                <div class="panel-content">
+                    <div id="tree-view" class="tree-container">
+                        <div class="empty-state">
+                            <div class="empty-icon">🌳</div>
+                            <h3>No Structure Available</h3>
+                            <p>Parse an EDI file to see its hierarchical structure</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Bottom Panel: Validation Errors -->
+        <div class="bottom-panel" id="validation-panel">
+            <div class="panel-header">
+                <h3>Validation Results</h3>
+                <div class="panel-controls">
+                    <span class="error-count" id="error-count">0 errors</span>
+                    <span class="warning-count" id="warning-count">0 warnings</span>
+                    <button class="btn btn-sm" id="clear-errors-btn">Clear</button>
+                    <button class="btn btn-sm" id="export-errors-btn" disabled>Export</button>
+                    <button class="btn btn-sm" id="toggle-errors-btn">Hide</button>
+                </div>
+            </div>
+            <div class="panel-content">
+                <div id="validation-results" class="validation-container">
+                    <div class="empty-state">
+                        <div class="empty-icon">✅</div>
+                        <h3>No Validation Results</h3>
+                        <p>Run validation to see errors and warnings</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Bar -->
+        <footer class="status-bar">
+            <div class="status-left">
+                <span id="file-status">Ready</span>
+            </div>
+            <div class="status-right">
+                <span id="line-col">Ln 1, Col 1</span>
+                <span id="file-type">EDI</span>
+                <span id="app-version">v0.4.0</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Context Menus -->
+    <div id="context-menu" class="context-menu" style="display: none;">
+        <ul>
+            <li id="ctx-copy">Copy</li>
+            <li id="ctx-select-all">Select All</li>
+            <li class="separator"></li>
+            <li id="ctx-goto-segment">Go to Segment</li>
+            <li id="ctx-validate-segment">Validate Segment</li>
+        </ul>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay" style="display: none;">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p>Processing EDI file...</p>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../node_modules/monaco-editor/min/vs/loader.js"></script>
+    <script src="../node_modules/split.js/dist/split.min.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/editor.js"></script>
+    <script src="js/tree-view.js"></script>
+    <script src="js/validation.js"></script>
+    <script src="js/file-manager.js"></script>
+</body>
+</html>
