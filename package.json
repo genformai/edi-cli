@@ -1,0 +1,78 @@
+{
+  "name": "edi-cli-monorepo",
+  "version": "0.4.0",
+  "description": "Postman for EDI - A comprehensive toolkit for parsing, validating, and analyzing EDI files",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "core"
+  ],
+  "scripts": {
+    "install:all": "npm install && npm run install:desktop && npm run install:api",
+    "install:desktop": "cd apps/desktop && npm install",
+    "install:api": "cd apps/api && npm install",
+    "install:cli": "cd apps/cli && pip install -e .",
+    
+    "dev:desktop": "cd apps/desktop && npm run dev",
+    "dev:api": "cd apps/api && npm run dev",
+    "dev:cli": "cd apps/cli && python -m src.main",
+    
+    "build:desktop": "cd apps/desktop && npm run build",
+    "build:api": "cd apps/api && npm run build",
+    "build:cli": "cd apps/cli && python setup.py build",
+    "build:all": "npm run build:desktop && npm run build:api && npm run build:cli",
+    
+    "test:desktop": "cd apps/desktop && npm test",
+    "test:api": "cd apps/api && npm test",
+    "test:cli": "cd apps/cli && python -m pytest",
+    "test:core": "cd core && python -m pytest",
+    "test:all": "npm run test:core && npm run test:cli && npm run test:desktop && npm run test:api",
+    
+    "lint:desktop": "cd apps/desktop && npm run lint",
+    "lint:api": "cd apps/api && npm run lint",
+    "lint:python": "ruff check core/ apps/cli/ shared/",
+    "lint:all": "npm run lint:desktop && npm run lint:api && npm run lint:python",
+    
+    "clean": "npm run clean:desktop && npm run clean:api && npm run clean:python",
+    "clean:desktop": "cd apps/desktop && rm -rf dist/ node_modules/",
+    "clean:api": "cd apps/api && rm -rf dist/ node_modules/",
+    "clean:python": "find . -type d -name '__pycache__' -exec rm -rf {} + && find . -name '*.pyc' -delete",
+    
+    "docker:api": "cd apps/api && docker build -t edi-cli-api .",
+    "docker:run": "docker run -p 8000:8000 edi-cli-api",
+    
+    "docs:build": "cd docs && mkdocs build",
+    "docs:serve": "cd docs && mkdocs serve",
+    
+    "release:desktop": "cd apps/desktop && npm run dist",
+    "release:cli": "cd apps/cli && python setup.py sdist bdist_wheel"
+  },
+  "keywords": [
+    "edi",
+    "x12",
+    "healthcare",
+    "parsing",
+    "validation",
+    "cli",
+    "desktop",
+    "api"
+  ],
+  "author": "EDI CLI Contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/edi-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-org/edi-cli/issues"
+  },
+  "homepage": "https://github.com/your-org/edi-cli#readme",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "devDependencies": {
+    "concurrently": "^8.0.0",
+    "cross-env": "^7.0.0"
+  }
+}
